@@ -1,0 +1,3503 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Riff</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+
+<style>
+/* ---------------------------------------------------------------------- */
+/* Tokens                                                                   */
+/* ---------------------------------------------------------------------- */
+
+:root {
+  --paper: #f7f7f4;
+  --card: #ffffff;
+  --card-hover: #fbfbfa;
+  --ink: #12141c;
+  --muted: #6b6f76;
+  --muted-2: #9296a0;
+  --line: #e7e6e1;
+  --line-strong: #d8d7d0;
+  --signal: #2342f5;
+  --signal-ink: #ffffff;
+  --kind-text: #2342f5;
+  --kind-video: #7c5cff;
+  --kind-audio: #d97e1f;
+  --danger: #d33a3a;
+  --danger-bg: #fdecec;
+  --success: #1f8a4d;
+  --shadow-sm: 0 1px 2px rgba(18, 20, 28, 0.06);
+  --shadow-md: 0 8px 24px rgba(18, 20, 28, 0.10);
+  --radius-lg: 18px;
+  --radius-md: 12px;
+  --radius-sm: 8px;
+  --font-display: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+html[data-theme="dark"] {
+  --paper: #0e1015;
+  --card: #171922;
+  --card-hover: #1c1f29;
+  --ink: #f1f1ef;
+  --muted: #979bA6;
+  --muted-2: #6c707a;
+  --line: #262933;
+  --line-strong: #333743;
+  --signal: #5b7fff;
+  --signal-ink: #0e1015;
+  --kind-text: #5b7fff;
+  --kind-video: #a48bff;
+  --kind-audio: #f0a94e;
+  --danger: #f0605d;
+  --danger-bg: #2a1717;
+  --success: #3ec27a;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 12px 28px rgba(0, 0, 0, 0.45);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: var(--font-display);
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+button, input, textarea, select {
+  font-family: inherit;
+  color: inherit;
+}
+
+a { color: inherit; }
+
+::selection {
+  background: color-mix(in srgb, var(--signal) 30%, transparent);
+}
+
+:focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Shell layout                                                             */
+/* ---------------------------------------------------------------------- */
+
+.shell {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.demo-banner {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.4;
+  text-align: center;
+  padding: 7px 14px;
+  background: var(--signal);
+  color: #fff;
+}
+
+.app-header {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px 10px;
+  border-bottom: 1px solid transparent;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.brand-mark {
+  width: 25px;
+  height: 25px;
+  border-radius: 7.5px;
+  background: linear-gradient(165deg, #2451ff, #1a35c4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #fff;
+  font-weight: 800;
+  font-size: 14px;
+  font-family: var(--font-display);
+  font-style: italic;
+  box-shadow: 0 1px 1px rgba(0,0,0,0.12);
+}
+
+.brand-word {
+  font-weight: 800;
+  font-size: 17px;
+  letter-spacing: -0.02em;
+}
+
+.header-tools {
+  display: flex;
+  gap: 4px;
+}
+
+.icon-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+.icon-btn:hover { background: var(--card-hover); color: var(--ink); }
+.icon-btn.is-active { background: var(--card); color: var(--signal); box-shadow: var(--shadow-sm); }
+
+.search-row {
+  flex-shrink: 0;
+  padding: 0 16px 10px;
+}
+
+.search-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 8px 12px;
+}
+.search-field-icon { color: var(--muted-2); flex-shrink: 0; }
+.search-field input {
+  border: none;
+  background: transparent;
+  outline: none;
+  width: 100%;
+  font-size: 14px;
+}
+.search-field input::placeholder { color: var(--muted-2); }
+
+.chip-row {
+  flex-shrink: 0;
+  display: flex;
+  gap: 6px;
+  padding: 0 16px 12px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.chip-row::-webkit-scrollbar { display: none; }
+
+.chip {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  color: var(--muted);
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+.chip:hover { border-color: var(--line-strong); }
+.chip.is-active { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
+.view-root {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px 16px 24px;
+}
+
+.view-fade { animation: view-fade-in 0.16s ease; }
+@keyframes view-fade-in {
+  from { opacity: 0; transform: translateY(3px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.tab-bar {
+  flex-shrink: 0;
+  display: flex;
+  border-top: 1px solid var(--line);
+  background: var(--card);
+}
+
+.tab-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 9px 0 10px;
+  border: none;
+  background: transparent;
+  color: var(--muted-2);
+  cursor: pointer;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  transition: color 0.12s ease;
+}
+.tab-btn:hover { color: var(--muted); }
+.tab-btn.is-active { color: var(--signal); }
+
+.toast-host {
+  position: fixed;
+  bottom: 62px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 40;
+  pointer-events: none;
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--ink);
+  color: var(--paper);
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 8px 8px 8px 14px;
+  border-radius: 999px;
+  box-shadow: var(--shadow-md);
+  animation: toast-in 0.16s ease;
+}
+
+.toast-action {
+  border: none;
+  background: color-mix(in srgb, var(--paper) 16%, transparent);
+  color: var(--paper);
+  font-weight: 700;
+  font-size: 12px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  cursor: pointer;
+  margin-left: 2px;
+}
+.toast-action:hover { background: color-mix(in srgb, var(--paper) 26%, transparent); }
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ---------------------------------------------------------------------- */
+/* Buttons & controls                                                       */
+/* ---------------------------------------------------------------------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  font-weight: 700;
+  font-size: 13.5px;
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+.btn-sm { padding: 7px 12px; font-size: 12.5px; }
+
+.btn-primary { background: var(--ink); color: var(--paper); }
+.btn-primary:hover { opacity: 0.88; }
+
+.btn-ghost { background: transparent; color: var(--muted); border-color: var(--line); }
+.btn-ghost:hover { background: var(--card-hover); color: var(--ink); }
+
+.btn-outline { background: var(--card); color: var(--ink); border-color: var(--line); }
+.btn-outline:hover { border-color: var(--line-strong); }
+
+.btn-danger { background: var(--danger); color: #fff; }
+.btn-danger-outline { color: var(--danger); }
+.btn-danger-outline:hover { background: var(--danger-bg); border-color: var(--danger); }
+
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.segmented {
+  display: flex;
+  gap: 4px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  padding: 4px;
+  border-radius: var(--radius-md);
+  margin-bottom: 16px;
+}
+
+.segmented-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-size: 12.5px;
+  font-weight: 700;
+  padding: 8px 4px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+.segmented-btn.is-active { background: var(--card); color: var(--ink); box-shadow: var(--shadow-sm); }
+
+.pill-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  color: var(--muted);
+  font-size: 12.5px;
+  font-weight: 700;
+  padding: 7px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.pill-btn.is-active { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
+/* ---------------------------------------------------------------------- */
+/* Empty state                                                              */
+/* ---------------------------------------------------------------------- */
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 56px 20px 24px;
+  color: var(--muted);
+}
+.empty-state-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--signal);
+  margin-bottom: 18px;
+}
+.empty-state h2 {
+  font-size: 16px;
+  margin: 0 0 8px;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+}
+.empty-state p {
+  margin: 0 0 20px;
+  font-size: 13px;
+  max-width: 260px;
+  line-height: 1.55;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Clip cards                                                               */
+/* ---------------------------------------------------------------------- */
+
+.feed-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 8px;
+}
+
+.clip-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  overflow: visible;
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
+  position: relative;
+}
+.clip-card:hover { box-shadow: var(--shadow-sm); border-color: var(--line-strong); }
+
+.clip-card-inner { padding: 13px 15px 11px; }
+
+.clip-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.clip-source {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  color: var(--muted);
+  min-width: 0;
+  border: none;
+  background: transparent;
+  padding: 2px 0;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+}
+.clip-source:hover .clip-site { color: var(--ink); }
+.clip-source img, .favicon-fallback-wrap { border-radius: 4px; flex-shrink: 0; color: var(--muted-2); }
+.clip-site {
+  font-weight: 600;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 118px;
+  transition: color 0.12s ease;
+}
+.kind-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.clip-time { color: var(--muted-2); font-family: var(--font-mono); font-size: 11px; white-space: nowrap; }
+
+.clip-body { cursor: pointer; }
+
+/* Kebab menu ------------------------------------------------------------ */
+
+.menu-wrap { position: relative; flex-shrink: 0; }
+
+.icon-btn-sm {
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: transparent;
+  color: var(--muted-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+.icon-btn-sm:hover { background: var(--paper); color: var(--ink); }
+
+.dropdown-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: 30;
+  min-width: 190px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  padding: 6px;
+  animation: menu-in 0.12s ease;
+}
+@keyframes menu-in {
+  from { opacity: 0; transform: translateY(-4px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.dropdown-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  border: none;
+  background: transparent;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 8px 9px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  text-align: left;
+}
+.dropdown-item:hover { background: var(--paper); }
+.dropdown-item-danger { color: var(--danger); }
+.dropdown-item-danger:hover { background: var(--danger-bg); }
+.dropdown-divider { height: 1px; background: var(--line); margin: 5px 3px; }
+
+.clip-quote {
+  margin: 0 0 10px;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--ink);
+  letter-spacing: -0.005em;
+}
+
+.clip-media-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+.clip-media-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--accent, var(--signal));
+  background: color-mix(in srgb, var(--accent, var(--signal)) 12%, transparent);
+  padding: 3px 8px;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+.clip-media-title { font-size: 14.5px; font-weight: 700; color: var(--ink); }
+.clip-media-channel { font-size: 12px; color: var(--muted); margin-bottom: 10px; }
+
+.comment-text {
+  margin: 0 0 10px;
+  font-size: 13.5px;
+  color: var(--muted);
+  background: var(--paper);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  line-height: 1.5;
+}
+
+.comment-row { margin-bottom: 10px; }
+.comment-voice, .voice-recorder.has-audio {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--paper);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+}
+
+.mini-play {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--paper);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.voice-wave {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex: 1;
+  height: 18px;
+}
+.voice-wave span {
+  width: 2.5px;
+  border-radius: 2px;
+  background: var(--muted-2);
+  display: inline-block;
+}
+
+.voice-duration { font-family: var(--font-mono); font-size: 11.5px; color: var(--muted); flex-shrink: 0; }
+
+.clip-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 10px;
+}
+.tag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  background: var(--paper);
+  border: 1px solid var(--line);
+  padding: 3px 9px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.12s ease;
+}
+.tag-chip:hover { border-color: var(--line-strong); color: var(--ink); }
+
+.clip-card-footer {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding-top: 9px;
+  border-top: 1px solid var(--line);
+  margin-top: 2px;
+}
+
+.footer-link, .footer-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  border-radius: var(--radius-sm);
+  color: var(--muted-2);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-decoration: none;
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 5px 8px;
+  transition: all 0.12s ease;
+}
+.footer-link:hover, .footer-btn:hover { background: var(--paper); color: var(--ink); }
+.footer-btn.is-active { color: var(--signal); }
+.clip-card-footer > *:last-child { margin-left: auto; }
+
+/* ---------------------------------------------------------------------- */
+/* Detail view                                                              */
+/* ---------------------------------------------------------------------- */
+
+.detail-view { padding-top: 6px; padding-bottom: 12px; }
+
+.detail-source {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+.detail-source img, .detail-source .favicon-fallback-wrap { border-radius: 5px; flex-shrink: 0; }
+.detail-source-text { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.detail-source-text strong {
+  font-size: 13.5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.detail-source-text span { font-size: 11.5px; color: var(--muted); }
+
+.detail-quote {
+  margin: 0 0 20px;
+  font-size: 19px;
+  font-weight: 650;
+  line-height: 1.5;
+  letter-spacing: -0.01em;
+  padding-left: 16px;
+  border-left: 3px solid var(--signal);
+}
+
+.detail-media {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  text-decoration: none;
+  color: var(--ink);
+  margin-bottom: 20px;
+}
+.detail-media:hover { border-color: var(--line-strong); }
+.detail-media-icon {
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  background: var(--paper);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--signal);
+  flex-shrink: 0;
+}
+.detail-media-text { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+.detail-media-text strong { font-size: 14.5px; }
+.detail-media-text span { font-size: 12px; color: var(--muted); font-family: var(--font-mono); }
+.detail-media-go { color: var(--muted-2); flex-shrink: 0; }
+
+.detail-label {
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted-2);
+  margin: 0 0 8px;
+}
+.detail-comment-text { font-size: 14.5px; padding: 14px 16px; }
+
+.detail-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 22px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+  font-size: 12px;
+  color: var(--muted);
+}
+.detail-meta span { display: inline-flex; align-items: center; gap: 5px; }
+.detail-meta a { display: inline-flex; align-items: center; gap: 5px; color: var(--signal); text-decoration: none; font-weight: 600; }
+.detail-meta a:hover { text-decoration: underline; }
+
+/* ---------------------------------------------------------------------- */
+/* Composer                                                                  */
+/* ---------------------------------------------------------------------- */
+
+.composer { padding-top: 10px; padding-bottom: 12px; }
+
+.composer-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.composer-heading h2 { font-size: 17px; margin: 0; letter-spacing: -0.01em; }
+
+.source-pill {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  margin-bottom: 16px;
+}
+.source-pill img { border-radius: 5px; flex-shrink: 0; }
+.source-pill-text { display: flex; flex-direction: column; min-width: 0; }
+.source-pill-text strong { font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.source-pill-text span { font-size: 11.5px; color: var(--muted); }
+
+.field-group { margin-bottom: 16px; }
+.field-group label {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted-2);
+  margin-bottom: 7px;
+}
+.field-group input[type="text"],
+.field-group input[type="number"],
+.field-group textarea {
+  width: 100%;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  font-size: 14px;
+  outline: none;
+  resize: vertical;
+  transition: border-color 0.12s ease;
+}
+.field-group input:focus, .field-group textarea:focus { border-color: var(--signal); }
+.field-group textarea { line-height: 1.55; font-family: inherit; }
+
+.field-group-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+.hint-text {
+  font-size: 12px;
+  color: var(--muted-2);
+  line-height: 1.5;
+  margin: -6px 0 16px;
+}
+
+.comment-toggle { display: flex; gap: 6px; margin-bottom: 10px; }
+
+.voice-recorder {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.voice-recorder.is-recording {
+  background: var(--danger-bg);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+}
+.rec-dot {
+  width: 9px; height: 9px; border-radius: 50%;
+  background: var(--danger);
+  animation: pulse 1.1s infinite ease-in-out;
+  flex-shrink: 0;
+}
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+.rec-timer { font-family: var(--font-mono); font-weight: 600; font-size: 13px; flex: 1; }
+
+.composer-actions {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin: 10px -16px -24px;
+  padding: 12px 16px 20px;
+  background: linear-gradient(to top, var(--paper) 70%, transparent);
+}
+
+/* ---------------------------------------------------------------------- */
+/* Settings                                                                  */
+/* ---------------------------------------------------------------------- */
+
+.settings { padding-top: 10px; padding-bottom: 20px; }
+.settings-section {
+  margin-bottom: 22px;
+  padding-bottom: 22px;
+  border-bottom: 1px solid var(--line);
+}
+.settings-section:last-child { border-bottom: none; }
+.settings-section h3 {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted-2);
+  margin: 0 0 12px;
+  font-weight: 700;
+}
+.settings-body { font-size: 13px; color: var(--muted); line-height: 1.6; margin: 0 0 12px; }
+.settings-row-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.shortcut-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  font-size: 13px;
+}
+.shortcut-row kbd {
+  font-family: var(--font-mono);
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-size: 11.5px;
+  color: var(--muted);
+}
+
+.settings-about { text-align: center; color: var(--muted); }
+.about-mark {
+  width: 34px; height: 34px;
+  margin: 0 auto 10px;
+  border-radius: 10px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--signal);
+  font-weight: 800;
+  font-style: italic;
+  font-size: 16px;
+}
+.settings-about p { margin: 2px 0; font-size: 13px; }
+.settings-muted { color: var(--muted-2); font-size: 12px; }
+
+/* ---------------------------------------------------------------------- */
+/* Misc                                                                      */
+/* ---------------------------------------------------------------------- */
+
+.ri-icon { display: block; }
+
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+}
+
+/* ---------------------------------------------------------------------- */
+/* Sort menu / select mode / bulk bar                                       */
+/* ---------------------------------------------------------------------- */
+
+.dropdown-menu-left { right: auto; left: 0; min-width: 168px; }
+.icon-invisible { visibility: hidden; }
+
+.select-count {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+  padding: 0 4px;
+}
+
+.chip-tag-active, .tag-chip-active {
+  background: var(--ink) !important;
+  color: var(--paper) !important;
+  border-color: var(--ink) !important;
+}
+
+.select-check {
+  width: 15px;
+  height: 15px;
+  border-radius: 5px;
+  border: 1.5px solid var(--line-strong);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--paper);
+  flex-shrink: 0;
+}
+.select-check.is-checked { background: var(--signal); border-color: var(--signal); }
+
+.clip-card.is-selectable { cursor: pointer; }
+.clip-card.is-selected { border-color: var(--signal); box-shadow: 0 0 0 1px var(--signal); }
+
+.bulk-bar {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 12px -16px -24px;
+  padding: 10px 16px 20px;
+  background: linear-gradient(to top, var(--paper) 75%, transparent);
+}
+.bulk-bar-spacer { flex: 1; }
+
+/* ---------------------------------------------------------------------- */
+/* Settings extras                                                          */
+/* ---------------------------------------------------------------------- */
+
+.settings-sublabel {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted-2);
+  margin: 16px 0 8px;
+}
+
+.swatch-row { display: flex; gap: 8px; }
+.swatch {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  transition: transform 0.12s ease;
+}
+.swatch:hover { transform: scale(1.08); }
+.swatch.is-active { border-color: var(--ink); }
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.stat-cell {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 12px 10px;
+  text-align: center;
+}
+.stat-cell strong { display: block; font-size: 19px; font-weight: 800; letter-spacing: -0.01em; }
+.stat-cell span { font-size: 11px; color: var(--muted); }
+
+.tag-manage-list { display: flex; flex-direction: column; gap: 6px; }
+.tag-manage-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.tag-manage-row .tag-chip { flex: 1; justify-content: flex-start; }
+.tag-count {
+  font-size: 11px;
+  color: var(--muted-2);
+  font-family: var(--font-mono);
+  min-width: 18px;
+  text-align: right;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Compact density                                                          */
+/* ---------------------------------------------------------------------- */
+
+html[data-density="compact"] .feed-list { gap: 8px; }
+html[data-density="compact"] .clip-card-inner { padding: 9px 12px 8px; }
+html[data-density="compact"] .clip-card-header { margin-bottom: 6px; }
+html[data-density="compact"] .clip-quote { font-size: 13.5px; margin-bottom: 6px; }
+html[data-density="compact"] .comment-text { padding: 7px 10px; font-size: 12.5px; margin-bottom: 6px; }
+html[data-density="compact"] .clip-card-footer { padding-top: 6px; }
+html[data-density="compact"] .field-group { margin-bottom: 11px; }
+
+</style>
+</head>
+<body>
+
+  <div class="shell">
+    <div class="demo-banner">Demo preview — seeded with sample riffs. Right-click capture only works in the real extension; "Capture this tab" cycles sample pages instead.</div>
+    <header class="app-header">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">R</span>
+        <span class="brand-word">riff</span>
+      </div>
+      <div id="header-tools" class="header-tools"></div>
+    </header>
+
+    <div id="search-row" class="search-row" hidden></div>
+    <div id="chip-row" class="chip-row" hidden></div>
+
+    <main id="view-root" class="view-root"></main>
+
+    <nav id="tab-bar" class="tab-bar"></nav>
+    <div id="toast-host" class="toast-host"></div>
+  </div>
+
+  
+<script>
+// ---- icons.js ----
+// Riff — icon set
+// Hand-authored, stroke-based icons in the shadcn/lucide idiom (24x24,
+// 2px stroke, round joins). Kept local so the extension never loads
+// remote script or icon-font code (MV3 disallows remote code anyway).
+
+const ICON_PATHS = {
+  feed: '<path d="M4 6h16M4 12h16M4 18h10"/>',
+  compose: '<path d="M12 5v14M5 12h14"/>',
+  settings:
+    '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.04 1.56V21a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 8.96 19.8a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.56-1.04H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.6 8.96a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34H9a1.7 1.7 0 0 0 1.04-1.56V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1.04 1.56 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87V9a1.7 1.7 0 0 0 1.56 1.04H21a2 2 0 1 1 0 4h-.09A1.7 1.7 0 0 0 19.4 15Z"/>',
+  search: '<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>',
+  mic:
+    '<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v3"/><path d="M9 21h6"/>',
+  micOff:
+    '<path d="M9 9v3a3 3 0 0 0 4.6 2.55M15 9.34V6a3 3 0 0 0-5.68-1.33"/><path d="M5 11a7 7 0 0 0 10.6 5.99M19 11a7 7 0 0 1-.34 2.16"/><path d="M12 18v3"/><path d="M9 21h6"/><path d="M2 2l20 20"/>',
+  scissors:
+    '<circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.5 15.5M8.5 8.5 20 20M8.7 12l2.3-2.3"/>',
+  link: '<path d="M9 17H7a5 5 0 0 1 0-10h2"/><path d="M15 7h2a5 5 0 0 1 0 10h-2"/><path d="M8 12h8"/>',
+  play: '<path d="M6 4.5v15l13-7.5-13-7.5Z"/>',
+  pause: '<rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/>',
+  close: '<path d="M18 6 6 18M6 6l12 12"/>',
+  trash:
+    '<path d="M4 7h16"/><path d="M10 11v6M14 11v6"/><path d="M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13"/><path d="M9 7V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v3"/>',
+  download: '<path d="M12 3v12"/><path d="m7 11 5 5 5-5"/><path d="M5 21h14"/>',
+  copy:
+    '<rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/>',
+  check: '<path d="m20 6-11 11-5-5"/>',
+  chevronLeft: '<path d="m15 18-6-6 6-6"/>',
+  chevronRight: '<path d="m9 18 6-6-6-6"/>',
+  chevronDown: '<path d="m6 9 6 6 6-6"/>',
+  tag: '<path d="M12.6 2H4a2 2 0 0 0-2 2v8.6a2 2 0 0 0 .59 1.41l9.4 9.4a2 2 0 0 0 2.82 0l8.6-8.6a2 2 0 0 0 0-2.82l-9.4-9.4A2 2 0 0 0 12.6 2Z"/><circle cx="7.5" cy="7.5" r="1.5"/>',
+  filter: '<path d="M4 5h16M7 12h10M10 19h4"/>',
+  sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+  moon: '<path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z"/>',
+  fileText:
+    '<path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h6"/>',
+  video: '<rect x="2" y="5" width="14" height="14" rx="2"/><path d="m22 8-6 4 6 4V8Z"/>',
+  headphones:
+    '<path d="M4 14v-2a8 8 0 0 1 16 0v2"/><rect x="2" y="14" width="5" height="7" rx="2"/><rect x="17" y="14" width="5" height="7" rx="2"/>',
+  more: '<circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/>',
+  edit: '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>',
+  externalLink: '<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6"/><path d="M10 14 21 3"/>',
+  share: '<path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7"/><path d="M16 6l-4-4-4 4"/><path d="M12 2v14"/>',
+  alert: '<circle cx="12" cy="12" r="10"/><path d="M12 8v5"/><path d="M12 16.5v.01"/>',
+  pin: '<path d="M12 2a5 5 0 0 0-5 5c0 3.5 5 11 5 11s5-7.5 5-11a5 5 0 0 0-5-5Z"/><circle cx="12" cy="7" r="2"/>',
+  archive: '<rect x="3" y="4" width="18" height="4" rx="1"/><path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8"/><path d="M10 13h4"/>',
+  globe: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18 14 14 0 0 1 0-18Z"/>',
+  shield: '<path d="M12 2 4 5v6c0 5 3.4 8.7 8 11 4.6-2.3 8-6 8-11V5l-8-3Z"/><path d="m9 12 2 2 4-4"/>',
+  arrowUpRight: '<path d="M7 17 17 7"/><path d="M7 7h10v10"/>',
+  loader: '<path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8"/>',
+  square: '<rect x="4" y="4" width="16" height="16" rx="2"/>',
+  clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/>',
+  moreVertical: '<circle cx="12" cy="5" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="19" r="1.6"/>',
+  arrowLeft: '<path d="M19 12H5"/><path d="m12 19-7-7 7-7"/>',
+  checkSquare: '<rect x="3" y="3" width="18" height="18" rx="3"/><path d="m8 12 3 3 5-6"/>',
+  circle: '<circle cx="12" cy="12" r="9"/>',
+  sort: '<path d="M11 5h10M11 9h7M11 13h4"/><path d="m3 5 0 14"/><path d="m3 19-3-3M3 19l3-3"/>',
+  hash: '<path d="M5 9h14M5 15h14M10 4 8 20M16 4l-2 16"/>',
+  barChart: '<path d="M4 20V10M10 20V4M16 20v-7"/><path d="M2 20h20"/>',
+  palette: '<circle cx="12" cy="12" r="9"/><circle cx="8" cy="11" r="1.3" fill="currentColor" stroke="none"/><circle cx="12" cy="8" r="1.3" fill="currentColor" stroke="none"/><circle cx="16" cy="11" r="1.3" fill="currentColor" stroke="none"/><path d="M12 19a2 2 0 0 1-2-2c0-.6.3-1 .7-1.4.4-.4.7-.8.7-1.4a2 2 0 0 0-2-2H8a5 5 0 1 1 9-3c0 1-.4 1.6-1 2.2-.5.5-1 1-1 1.8a2 2 0 0 0 2 2 3.2 3.2 0 0 1 0 6Z"/>',
+  upload: '<path d="M12 21V9"/><path d="m7 13 5-5 5 5"/><path d="M5 21h14"/>',
+  sliders: '<path d="M4 6h6M14 6h6M4 12h10M18 12h2M4 18h4M12 18h8"/><circle cx="12" cy="6" r="2" fill="var(--card)"/><circle cx="16" cy="12" r="2" fill="var(--card)"/><circle cx="10" cy="18" r="2" fill="var(--card)"/>',
+  x: '<path d="M18 6 6 18M6 6l12 12"/>',
+};
+
+function icon(name, opts = {}) {
+  const { size = 18, className = "", strokeWidth = 1.8 } = opts;
+  const inner = ICON_PATHS[name] || ICON_PATHS.square;
+  return `<svg class="ri-icon ${className}" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${strokeWidth}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${inner}</svg>`;
+}
+
+
+// ---- db.js ----
+// Riff — local data layer
+// Everything Riff stores lives in chrome.storage.local, on-device only.
+// There is no server in this build; "publish" actions produce a
+// self-contained file the user controls, rather than sending data anywhere.
+
+const CLIPS_KEY = "riffClips";
+const SETTINGS_KEY = "riffSettings";
+
+const DEFAULT_SETTINGS = {
+  theme: "system", // "light" | "dark" | "system"
+  accentColor: "indigo", // indigo | violet | emerald | amber | rose
+  density: "comfortable", // comfortable | compact
+  defaultDurationCap: 90,
+  defaultClipLength: 30,
+  defaultCommentKind: "text", // text | voice
+  hasSeenWelcome: false,
+};
+
+function uid() {
+  return "rf_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 9);
+}
+
+async function getAllClips() {
+  const { [CLIPS_KEY]: clips } = await chrome.storage.local.get(CLIPS_KEY);
+  return Array.isArray(clips) ? clips : [];
+}
+
+async function saveAllClips(clips) {
+  await chrome.storage.local.set({ [CLIPS_KEY]: clips });
+}
+
+async function createClip(partial) {
+  const clips = await getAllClips();
+  const clip = {
+    id: uid(),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    pinned: false,
+    tags: [],
+    kind: "text", // text | video | audio
+    source: { url: "", title: "", siteName: "", favicon: "", author: null },
+    quote: "",
+    mediaTitle: "",
+    channel: "",
+    startSeconds: 0,
+    endSeconds: null,
+    totalDuration: null,
+    comment: { kind: "text", text: "", audioDataUrl: null, audioDurationSeconds: null },
+    ...partial,
+  };
+  clips.unshift(clip);
+  await saveAllClips(clips);
+  return clip;
+}
+
+async function updateClip(id, patch) {
+  const clips = await getAllClips();
+  const idx = clips.findIndex((c) => c.id === id);
+  if (idx === -1) return null;
+  clips[idx] = { ...clips[idx], ...patch, updatedAt: new Date().toISOString() };
+  await saveAllClips(clips);
+  return clips[idx];
+}
+
+async function deleteClip(id) {
+  const clips = await getAllClips();
+  const next = clips.filter((c) => c.id !== id);
+  await saveAllClips(next);
+  return next;
+}
+
+async function restoreClip(clip) {
+  const clips = await getAllClips();
+  clips.unshift(clip);
+  await saveAllClips(clips);
+  return clips;
+}
+
+async function togglePin(id) {
+  const clips = await getAllClips();
+  const clip = clips.find((c) => c.id === id);
+  if (!clip) return null;
+  clip.pinned = !clip.pinned;
+  clip.updatedAt = new Date().toISOString();
+  await saveAllClips(clips);
+  return clip;
+}
+
+async function getSettings() {
+  const { [SETTINGS_KEY]: settings } = await chrome.storage.local.get(SETTINGS_KEY);
+  return { ...DEFAULT_SETTINGS, ...(settings || {}) };
+}
+
+async function saveSettings(patch) {
+  const current = await getSettings();
+  const next = { ...current, ...patch };
+  await chrome.storage.local.set({ [SETTINGS_KEY]: next });
+  return next;
+}
+
+async function getPendingCapture() {
+  const { riffPendingCapture } = await chrome.storage.session.get("riffPendingCapture");
+  return riffPendingCapture || null;
+}
+
+async function clearPendingCapture() {
+  await chrome.storage.session.remove("riffPendingCapture");
+}
+
+async function usageEstimate() {
+  const bytes = await chrome.storage.local.getBytesInUse(CLIPS_KEY);
+  return bytes;
+}
+
+async function exportAllData() {
+  const clips = await getAllClips();
+  const settings = await getSettings();
+  return { exportedAt: new Date().toISOString(), settings, clips };
+}
+
+async function wipeAllClips() {
+  await saveAllClips([]);
+}
+
+function allTagsWithCounts(clips) {
+  const counts = new Map();
+  clips.forEach((c) => (c.tags || []).forEach((t) => counts.set(t, (counts.get(t) || 0) + 1)));
+  return [...counts.entries()].sort((a, b) => b[1] - a[1]).map(([tag, count]) => ({ tag, count }));
+}
+
+async function renameTagEverywhere(oldTag, newTag) {
+  const clips = await getAllClips();
+  const clean = newTag.trim();
+  if (!clean) return clips;
+  clips.forEach((c) => {
+    if (!c.tags) return;
+    const has = c.tags.includes(oldTag);
+    if (!has) return;
+    const set = new Set(c.tags.filter((t) => t !== oldTag));
+    set.add(clean);
+    c.tags = [...set];
+  });
+  await saveAllClips(clips);
+  return clips;
+}
+
+async function deleteTagEverywhere(tag) {
+  const clips = await getAllClips();
+  clips.forEach((c) => {
+    if (!c.tags) return;
+    c.tags = c.tags.filter((t) => t !== tag);
+  });
+  await saveAllClips(clips);
+  return clips;
+}
+
+async function importClips(incomingClips) {
+  const existing = await getAllClips();
+  const existingIds = new Set(existing.map((c) => c.id));
+  let added = 0;
+  incomingClips.forEach((c) => {
+    if (!c || !c.id || existingIds.has(c.id)) return;
+    existing.unshift(c);
+    existingIds.add(c.id);
+    added += 1;
+  });
+  await saveAllClips(existing);
+  return { clips: existing, added };
+}
+
+const DRAFT_KEY = "riffDraftInProgress";
+
+async function saveDraftInProgress(draft) {
+  await chrome.storage.local.set({ [DRAFT_KEY]: draft });
+}
+
+async function getDraftInProgress() {
+  const { [DRAFT_KEY]: draft } = await chrome.storage.local.get(DRAFT_KEY);
+  return draft || null;
+}
+
+async function clearDraftInProgress() {
+  await chrome.storage.local.remove(DRAFT_KEY);
+}
+
+
+
+const db = {
+  uid, getAllClips, saveAllClips, createClip, updateClip, deleteClip, restoreClip,
+  togglePin, getSettings, saveSettings, getPendingCapture, clearPendingCapture,
+  usageEstimate, exportAllData, wipeAllClips, allTagsWithCounts, renameTagEverywhere,
+  deleteTagEverywhere, importClips, saveDraftInProgress, getDraftInProgress,
+  clearDraftInProgress,
+};
+
+// ---- landing.js ----
+// Riff — landing page generator
+// Produces a single self-contained HTML file per clip: the local stand-in
+// for the "public landing page" described in the product spec. It never
+// re-hosts source video/audio — for YouTube it cues the platform's own
+// official embed at the clipped timestamp; everything else links back to
+// the source with a plain-text timestamp. Downscaling/re-hosting a ripped
+// file is deliberately out of scope for the same reason it's flagged as a
+// risk in the product brief.
+
+function esc(str) {
+  if (str == null) return "";
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function fmt(totalSeconds) {
+  const s = Math.max(0, Math.floor(totalSeconds || 0));
+  const m = Math.floor(s / 60);
+  const r = s % 60;
+  return `${m}:${String(r).padStart(2, "0")}`;
+}
+
+function youTubeIdFromUrl(url) {
+  try {
+    const u = new URL(url);
+    if (u.hostname.includes("youtu.be")) return u.pathname.slice(1);
+    if (u.hostname.includes("youtube.com")) return u.searchParams.get("v");
+  } catch {
+    return null;
+  }
+  return null;
+}
+
+function buildLandingPageHTML(clip) {
+  const isYouTube = clip.kind === "video" && /youtube\.com|youtu\.be/.test(clip.source?.url || "");
+  const videoId = isYouTube ? youTubeIdFromUrl(clip.source.url) : null;
+
+  let mediaBlock = "";
+  if (clip.kind === "text") {
+    mediaBlock = `<blockquote class="quote">&ldquo;${esc(clip.quote)}&rdquo;</blockquote>`;
+  } else if (videoId) {
+    mediaBlock = `
+      <div class="embed">
+        <iframe
+          src="https://www.youtube.com/embed/${esc(videoId)}?start=${Math.floor(clip.startSeconds || 0)}&rel=0"
+          title="${esc(clip.mediaTitle)}"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen
+        ></iframe>
+      </div>
+      <p class="media-caption">${esc(clip.mediaTitle)} &middot; ${fmt(clip.startSeconds)}&ndash;${fmt(clip.endSeconds)}${clip.channel ? ` &middot; ${esc(clip.channel)}` : ""}</p>
+    `;
+  } else {
+    mediaBlock = `
+      <a class="media-link" href="${esc(clip.source.url)}" target="_blank" rel="noopener noreferrer">
+        <span class="media-link-icon">&#9654;</span>
+        <span>
+          <strong>${esc(clip.mediaTitle || "Listen to the clipped moment")}</strong>
+          <small>${fmt(clip.startSeconds)}&ndash;${fmt(clip.endSeconds)} on ${esc(clip.source.siteName || "the original source")}</small>
+        </span>
+      </a>
+    `;
+  }
+
+  const commentBlock =
+    clip.comment?.kind === "voice" && clip.comment.audioDataUrl
+      ? `<div class="comment"><audio controls src="${clip.comment.audioDataUrl}"></audio></div>`
+      : clip.comment?.text
+        ? `<p class="comment-text">${esc(clip.comment.text)}</p>`
+        : "";
+
+  const tags = (clip.tags || []).map((t) => `<span class="tag">${esc(t)}</span>`).join("");
+
+  return `<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>${esc(clip.mediaTitle || clip.quote?.slice(0, 60) || "A riff")} — Riff</title>
+<meta name="robots" content="noindex" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#12141c; --paper:#f7f7f4; --card:#ffffff; --line:#e7e6e1;
+    --muted:#6b6f76; --signal:#2451ff; --video:#7c5cff; --audio:#e08a2c;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Plus Jakarta Sans", system-ui, sans-serif;
+    display:flex; justify-content:center; padding:48px 20px;
+    line-height:1.5;
+  }
+  .page{ width:100%; max-width:640px; }
+  .brand{ display:flex; align-items:center; gap:8px; margin-bottom:32px; font-weight:800; letter-spacing:-0.02em; color:var(--ink); text-decoration:none; }
+  .brand-mark{ width:22px; height:22px; border-radius:6.5px; background:linear-gradient(165deg,#2451ff,#1a35c4); display:flex; align-items:center; justify-content:center; color:#fff; font-weight:800; font-style:italic; font-size:12px; }
+  .card{ background:var(--card); border:1px solid var(--line); border-radius:20px; padding:32px; }
+  .source-row{ display:flex; align-items:center; gap:8px; font-size:13px; color:var(--muted); margin-bottom:18px; }
+  .source-row img{ width:16px; height:16px; border-radius:4px; }
+  .source-row a{ color:var(--muted); text-decoration:none; border-bottom:1px solid var(--line); }
+  .quote{ font-size:22px; font-weight:600; line-height:1.45; margin:0 0 20px; padding-left:18px; border-left:3px solid var(--signal); }
+  .embed{ position:relative; padding-top:56.25%; border-radius:12px; overflow:hidden; background:#000; margin-bottom:10px; }
+  .embed iframe{ position:absolute; inset:0; width:100%; height:100%; border:0; }
+  .media-caption{ font-size:13px; color:var(--muted); margin:0 0 20px; }
+  .media-link{ display:flex; align-items:center; gap:14px; padding:16px; border:1px solid var(--line); border-radius:14px; text-decoration:none; color:var(--ink); margin-bottom:20px; }
+  .media-link-icon{ width:36px; height:36px; border-radius:50%; background:var(--audio); color:#fff; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .media-link strong{ display:block; font-size:15px; }
+  .media-link small{ color:var(--muted); font-family:"IBM Plex Mono", monospace; font-size:12px; }
+  .comment-text{ font-size:16px; color:var(--ink); background:#f2f3fb; border-radius:12px; padding:16px 18px; margin:0 0 18px; }
+  .comment audio{ width:100%; margin-bottom:18px; }
+  .tags{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:22px; }
+  .tag{ font-size:12px; color:var(--muted); background:var(--paper); border:1px solid var(--line); padding:4px 10px; border-radius:999px; }
+  .cta-row{ display:flex; gap:10px; flex-wrap:wrap; }
+  .btn{ font-family:inherit; font-size:14px; font-weight:600; border-radius:10px; padding:10px 16px; text-decoration:none; display:inline-flex; align-items:center; gap:8px; }
+  .btn-primary{ background:var(--ink); color:#fff; }
+  .btn-ghost{ background:transparent; color:var(--muted); border:1px solid var(--line); }
+  .footer{ text-align:center; margin-top:28px; font-size:12px; color:var(--muted); }
+  .footer a{ color:var(--muted); }
+  @media (prefers-color-scheme: dark){
+    :root{ --ink:#f2f2f0; --paper:#0f1116; --card:#171923; --line:#282b36; --muted:#8b8f9a; }
+    .embed{ background:#000; }
+  }
+</style>
+</head>
+<body>
+  <div class="page">
+    <span class="brand">
+      <span class="brand-mark">R</span>
+      riff
+    </span>
+
+    <div class="card">
+      <div class="source-row">
+        ${clip.source?.favicon ? `<img src="${esc(clip.source.favicon)}" alt="" />` : ""}
+        <span>${esc(clip.source?.siteName || "")}</span>
+        <span>&middot;</span>
+        <a href="${esc(clip.source?.url)}" target="_blank" rel="noopener noreferrer">View original</a>
+      </div>
+
+      ${mediaBlock}
+      ${commentBlock}
+
+      ${tags ? `<div class="tags">${tags}</div>` : ""}
+
+      <div class="cta-row">
+        <a class="btn btn-primary" href="${esc(clip.source?.url)}" target="_blank" rel="noopener noreferrer">Open the source</a>
+        <a class="btn btn-ghost" href="mailto:?subject=${encodeURIComponent("Takedown request: " + (clip.mediaTitle || clip.quote || "a riff"))}">File a claim</a>
+      </div>
+    </div>
+
+    <p class="footer">Exported from Riff &middot; every clip links back to where it came from</p>
+  </div>
+</body>
+</html>`;
+}
+
+
+// ---- mock-chrome.js (demo shim) ----
+// Riff — DEMO SHIM
+// This file exists only so the exact same app.js / db.js / icons.js /
+// landing.js that ship in the real extension can run inside a plain
+// browser tab, with an in-memory stand-in for chrome.storage and
+// chrome.runtime. Nothing here ships in the actual extension build —
+// the real manifest.json points at genuine chrome.* APIs instead.
+
+(function () {
+  const memory = {
+    local: {
+      riffClips: seedClips(),
+      riffSettings: { theme: "system", defaultDurationCap: 90, hasSeenWelcome: true },
+    },
+    session: {},
+  };
+
+  function clone(v) {
+    return v === undefined ? v : JSON.parse(JSON.stringify(v));
+  }
+
+  function makeArea(store) {
+    return {
+      get(keys) {
+        return new Promise((resolve) => {
+          if (keys == null) return resolve(clone(store));
+          if (typeof keys === "string") return resolve({ [keys]: clone(store[keys]) });
+          if (Array.isArray(keys)) {
+            const out = {};
+            keys.forEach((k) => (out[k] = clone(store[k])));
+            return resolve(out);
+          }
+          resolve(clone(store));
+        });
+      },
+      set(obj) {
+        return new Promise((resolve) => {
+          Object.assign(store, clone(obj));
+          resolve();
+        });
+      },
+      remove(keys) {
+        return new Promise((resolve) => {
+          const list = Array.isArray(keys) ? keys : [keys];
+          list.forEach((k) => delete store[k]);
+          resolve();
+        });
+      },
+      getBytesInUse() {
+        return new Promise((resolve) => resolve(JSON.stringify(store).length));
+      },
+    };
+  }
+
+  const listeners = [];
+
+  let captureCycle = 0;
+  const sampleCaptures = [
+    {
+      kind: "text",
+      source: {
+        url: "https://www.theatlantic.com/technology/archive/sample-piece/",
+        title: "The Slow Death of the Screenshot",
+        siteName: "The Atlantic",
+        favicon: favicon("theatlantic.com"),
+        author: "J. Whitfield",
+      },
+      quote:
+        "Every screenshot is a small act of erasure: the crop removes the byline, the reply removes the thread, and what's left behind is a claim nobody can check.",
+    },
+    {
+      kind: "video",
+      source: {
+        url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+        title: "Sample Podcast Clip — Episode 214",
+        siteName: "YouTube",
+        favicon: favicon("youtube.com"),
+        author: null,
+      },
+      mediaTitle: "Why every clipping tool ships without attribution",
+      channel: "Marginalia Podcast",
+      startSeconds: 1452,
+      durationCap: 90,
+      totalDuration: 5820,
+    },
+    {
+      kind: "audio",
+      source: {
+        url: "https://podcasts.example.com/episodes/context-collapse",
+        title: "Context Collapse — Ep. 88",
+        siteName: "Overcast",
+        favicon: favicon("overcast.fm"),
+        author: null,
+      },
+      mediaTitle: "The Genius annotation postmortem",
+      channel: "Context Collapse",
+      startSeconds: 612,
+      durationCap: 90,
+      totalDuration: 2760,
+    },
+  ];
+
+  function favicon(domain) {
+    return `https://www.google.com/s2/favicons?sz=64&domain=${domain}`;
+  }
+
+  window.chrome = {
+    storage: {
+      local: makeArea(memory.local),
+      session: makeArea(memory.session),
+    },
+    runtime: {
+      onMessage: {
+        addListener(fn) {
+          listeners.push(fn);
+        },
+      },
+      sendMessage(message) {
+        if (message?.type === "RIFF_CAPTURE_ACTIVE_TAB") {
+          const payload = sampleCaptures[captureCycle % sampleCaptures.length];
+          captureCycle += 1;
+          return Promise.resolve({ ok: true, payload: clone(payload) });
+        }
+        return Promise.resolve({ ok: false, error: "Not available in demo mode." });
+      },
+    },
+    sidePanel: {
+      open() {
+        return Promise.resolve();
+      },
+    },
+  };
+
+  function seedClips() {
+    const now = Date.now();
+    const hoursAgo = (h) => new Date(now - h * 3600 * 1000).toISOString();
+    return [
+      {
+        id: "rf_demo_1",
+        createdAt: hoursAgo(2),
+        updatedAt: hoursAgo(2),
+        pinned: true,
+        tags: ["media", "attribution"],
+        kind: "text",
+        source: {
+          url: "https://www.theatlantic.com/technology/archive/sample-piece/",
+          title: "The Slow Death of the Screenshot",
+          siteName: "The Atlantic",
+          favicon: favicon("theatlantic.com"),
+          author: "J. Whitfield",
+        },
+        quote:
+          "Every screenshot is a small act of erasure: the crop removes the byline, the reply removes the thread, and what's left behind is a claim nobody can check.",
+        mediaTitle: "",
+        channel: "",
+        startSeconds: 0,
+        endSeconds: null,
+        totalDuration: null,
+        comment: {
+          kind: "text",
+          text: "This is the whole thesis in one line. Worth reading the full piece before you quote it elsewhere.",
+          audioDataUrl: null,
+          audioDurationSeconds: null,
+        },
+      },
+      {
+        id: "rf_demo_2",
+        createdAt: hoursAgo(6),
+        updatedAt: hoursAgo(6),
+        pinned: false,
+        tags: ["podcast", "startups"],
+        kind: "video",
+        source: {
+          url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+          title: "Sample Podcast Clip — Episode 214",
+          siteName: "YouTube",
+          favicon: favicon("youtube.com"),
+          author: null,
+        },
+        quote: "",
+        mediaTitle: "Why every clipping tool ships without attribution",
+        channel: "Marginalia Podcast",
+        startSeconds: 1452,
+        endSeconds: 1497,
+        totalDuration: 5820,
+        comment: {
+          kind: "text",
+          text: "The bit at 24:12 about Genius's distribution problem is the sharpest 45 seconds in the whole episode.",
+          audioDataUrl: null,
+          audioDurationSeconds: null,
+        },
+      },
+      {
+        id: "rf_demo_3",
+        createdAt: hoursAgo(28),
+        updatedAt: hoursAgo(28),
+        pinned: false,
+        tags: ["research"],
+        kind: "audio",
+        source: {
+          url: "https://podcasts.example.com/episodes/context-collapse",
+          title: "Context Collapse — Ep. 88",
+          siteName: "Overcast",
+          favicon: favicon("overcast.fm"),
+          author: null,
+        },
+        quote: "",
+        mediaTitle: "The Genius annotation postmortem",
+        channel: "Context Collapse",
+        startSeconds: 612,
+        endSeconds: 664,
+        totalDuration: 2760,
+        comment: {
+          kind: "text",
+          text: "Good breakdown of why annotations that only live on one site never really spread.",
+          audioDataUrl: null,
+          audioDurationSeconds: null,
+        },
+      },
+      {
+        id: "rf_demo_4",
+        createdAt: hoursAgo(72),
+        updatedAt: hoursAgo(72),
+        pinned: false,
+        tags: [],
+        kind: "text",
+        source: {
+          url: "https://www.nytimes.com/section/technology",
+          title: "Community Notes Hits 1M Contributors",
+          siteName: "The New York Times",
+          favicon: favicon("nytimes.com"),
+          author: null,
+        },
+        quote:
+          "Under ten percent of submitted notes are ever published — the bottleneck was never willingness, it was scope.",
+        mediaTitle: "",
+        channel: "",
+        startSeconds: 0,
+        endSeconds: null,
+        totalDuration: null,
+        comment: { kind: "text", text: "", audioDataUrl: null, audioDurationSeconds: null },
+      },
+    ];
+  }
+})();
+
+// ---- app.js ----
+
+// ---------------------------------------------------------------------------
+// State
+// ---------------------------------------------------------------------------
+
+const state = {
+  view: "feed", // feed | compose | settings
+  clips: [],
+  settings: null,
+  filter: "all", // all | text | video | audio | pinned
+  sort: "newest", // newest | oldest | az
+  tagFilter: null,
+  search: "",
+  searchOpen: false,
+  filtersOpen: false,
+  selectMode: false,
+  selectedIds: new Set(),
+  editingId: null, // clip id being edited, or null for a new clip
+  draft: null, // working copy of the clip being composed
+  detailId: null, // clip id currently open in the detail view
+  openMenuId: null, // id ("detail" for the detail view) of the open kebab menu
+  recorder: {
+    active: false,
+    mediaRecorder: null,
+    chunks: [],
+    startedAt: null,
+    timerHandle: null,
+    elapsedSeconds: 0,
+  },
+  toast: null,
+};
+
+const KIND_META = {
+  text: { label: "Text", icon: "fileText", color: "var(--kind-text)" },
+  video: { label: "Video", icon: "video", color: "var(--kind-video)" },
+  audio: { label: "Audio", icon: "headphones", color: "var(--kind-audio)" },
+};
+
+// ---------------------------------------------------------------------------
+// Boot
+// ---------------------------------------------------------------------------
+
+const root = document.getElementById("view-root");
+const headerTools = document.getElementById("header-tools");
+const searchRow = document.getElementById("search-row");
+const chipRow = document.getElementById("chip-row");
+const tabBar = document.getElementById("tab-bar");
+const toastHost = document.getElementById("toast-host");
+
+async function boot() {
+  state.settings = await db.getSettings();
+  applyTheme(state.settings.theme);
+  applyAccent(state.settings.accentColor);
+  applyDensity(state.settings.density);
+  state.clips = await db.getAllClips();
+
+  const pending = await db.getPendingCapture();
+  if (pending) {
+    openComposerFromCapture(pending);
+    await db.clearPendingCapture();
+  }
+
+  render();
+}
+
+chrome.runtime.onMessage.addListener((message) => {
+  if (message?.type === "RIFF_PENDING_CAPTURE_READY") {
+    db.getPendingCapture().then((pending) => {
+      if (!pending) return;
+      openComposerFromCapture(pending);
+      db.clearPendingCapture();
+      render();
+    });
+  }
+});
+
+boot();
+
+// ---------------------------------------------------------------------------
+// Theme
+// ---------------------------------------------------------------------------
+
+function applyTheme(pref) {
+  const mql = window.matchMedia("(prefers-color-scheme: dark)");
+  const resolved = pref === "system" ? (mql.matches ? "dark" : "light") : pref;
+  document.documentElement.setAttribute("data-theme", resolved);
+}
+
+const ACCENTS = {
+  indigo: { light: "#2342f5", dark: "#5b7fff" },
+  violet: { light: "#7c3aed", dark: "#a78bfa" },
+  emerald: { light: "#0f9d63", dark: "#34d399" },
+  amber: { light: "#c2760c", dark: "#f0a94e" },
+  rose: { light: "#e11d5e", dark: "#fb7299" },
+};
+
+function applyAccent(key) {
+  const accent = ACCENTS[key] || ACCENTS.indigo;
+  const root = document.documentElement;
+  root.style.setProperty("--signal", accent.light);
+  root.style.setProperty("--kind-text", accent.light);
+  root.dataset.accent = key;
+  // Dark-theme override lives in an injected style tag so it only applies
+  // under [data-theme="dark"], matching how the base tokens are structured.
+  let tag = document.getElementById("accent-dark-override");
+  if (!tag) {
+    tag = document.createElement("style");
+    tag.id = "accent-dark-override";
+    document.head.appendChild(tag);
+  }
+  tag.textContent = `html[data-theme="dark"]{ --signal:${accent.dark}; --kind-text:${accent.dark}; }`;
+}
+
+function applyDensity(value) {
+  document.documentElement.setAttribute("data-density", value === "compact" ? "compact" : "comfortable");
+}
+
+// ---------------------------------------------------------------------------
+// Render: shell chrome (tab bar, search, chips)
+// ---------------------------------------------------------------------------
+
+function render() {
+  renderTabBar();
+  renderHeaderTools();
+  renderSearchRow();
+  renderChipRow();
+  renderView();
+  renderToast();
+}
+
+function renderTabBar() {
+  const tabs = [
+    { id: "feed", label: "Feed", icon: "feed" },
+    { id: "compose", label: "New", icon: "compose" },
+    { id: "settings", label: "Settings", icon: "settings" },
+  ];
+  tabBar.innerHTML = tabs
+    .map(
+      (t) => `
+      <button class="tab-btn ${state.view === t.id ? "is-active" : ""}" data-tab="${t.id}">
+        ${icon(t.icon, { size: 20 })}
+        <span>${t.label}</span>
+      </button>`
+    )
+    .join("");
+}
+
+function renderHeaderTools() {
+  if (state.view === "feed" && state.detailId) {
+    const clip = state.clips.find((c) => c.id === state.detailId);
+    headerTools.innerHTML = `
+      <button class="icon-btn" id="btn-detail-back" title="Back">${icon("arrowLeft", { size: 18 })}</button>
+      <div class="menu-wrap">
+        <button class="icon-btn" id="btn-detail-menu" title="More">${icon("moreVertical", { size: 18 })}</button>
+        ${state.openMenuId === "detail" && clip ? cardMenu(clip.id) : ""}
+      </div>
+    `;
+    return;
+  }
+
+  if (state.view === "feed" && state.selectMode) {
+    headerTools.innerHTML = `
+      <span class="select-count">${state.selectedIds.size} selected</span>
+      <button class="icon-btn" id="btn-exit-select" title="Cancel">${icon("x", { size: 18 })}</button>
+    `;
+    return;
+  }
+
+  if (state.view !== "feed") {
+    headerTools.innerHTML = "";
+    return;
+  }
+
+  const sortLabels = { newest: "Newest", oldest: "Oldest", az: "A\u2013Z" };
+  headerTools.innerHTML = `
+    <div class="menu-wrap">
+      <button class="icon-btn ${state.openMenuId === "sort" ? "is-active" : ""}" id="btn-toggle-sort" title="Sort: ${sortLabels[state.sort]}">
+        ${icon("sort", { size: 18 })}
+      </button>
+      ${state.openMenuId === "sort" ? sortMenu() : ""}
+    </div>
+    <button class="icon-btn ${state.selectMode ? "is-active" : ""}" id="btn-toggle-select" title="Select">
+      ${icon("checkSquare", { size: 18 })}
+    </button>
+    <button class="icon-btn ${state.searchOpen ? "is-active" : ""}" id="btn-toggle-search" title="Search">
+      ${icon("search", { size: 18 })}
+    </button>
+    <button class="icon-btn ${state.filtersOpen ? "is-active" : ""}" id="btn-toggle-filters" title="Filter">
+      ${icon("filter", { size: 18 })}
+    </button>
+  `;
+}
+
+function sortMenu() {
+  const options = [
+    { id: "newest", label: "Newest first" },
+    { id: "oldest", label: "Oldest first" },
+    { id: "az", label: "A\u2013Z" },
+  ];
+  return `
+    <div class="dropdown-menu dropdown-menu-left">
+      ${options
+        .map(
+          (o) => `
+        <button class="dropdown-item" data-sort="${o.id}">
+          ${icon("check", { size: 14, className: state.sort === o.id ? "" : "icon-invisible" })}
+          <span>${o.label}</span>
+        </button>`
+        )
+        .join("")}
+    </div>
+  `;
+}
+
+function renderSearchRow() {
+  if (state.view !== "feed" || !state.searchOpen || state.detailId || state.selectMode) {
+    searchRow.hidden = true;
+    searchRow.innerHTML = "";
+    return;
+  }
+  searchRow.hidden = false;
+  searchRow.innerHTML = `
+    <div class="search-field">
+      ${icon("search", { size: 16, className: "search-field-icon" })}
+      <input id="search-input" type="text" placeholder="Search your riffs" value="${escapeAttr(state.search)}" autocomplete="off" />
+    </div>
+  `;
+  const input = document.getElementById("search-input");
+  input.focus();
+  input.setSelectionRange(input.value.length, input.value.length);
+}
+
+function renderChipRow() {
+  if (state.view !== "feed" || state.detailId || state.selectMode || (!state.filtersOpen && !state.tagFilter)) {
+    chipRow.hidden = true;
+    chipRow.innerHTML = "";
+    return;
+  }
+  chipRow.hidden = false;
+
+  let html = "";
+  if (state.tagFilter) {
+    html += `<button class="chip chip-tag-active" data-clear-tag="1">${icon("hash", { size: 12 })}${escapeHtml(state.tagFilter)}${icon("x", { size: 12 })}</button>`;
+  }
+  if (state.filtersOpen) {
+    const chips = [
+      { id: "all", label: "All" },
+      { id: "pinned", label: "Pinned" },
+      { id: "text", label: "Text" },
+      { id: "video", label: "Video" },
+      { id: "audio", label: "Audio" },
+    ];
+    html += chips
+      .map(
+        (c) =>
+          `<button class="chip ${state.filter === c.id ? "is-active" : ""}" data-filter="${c.id}">${c.label}</button>`
+      )
+      .join("");
+  }
+  chipRow.innerHTML = html;
+}
+
+function renderToast() {
+  if (!state.toast) {
+    toastHost.innerHTML = "";
+    return;
+  }
+  const { msg, actionLabel } = state.toast;
+  toastHost.innerHTML = `
+    <div class="toast">
+      ${icon("check", { size: 14 })}<span>${escapeHtml(msg)}</span>
+      ${actionLabel ? `<button class="toast-action" id="toast-action-btn">${escapeHtml(actionLabel)}</button>` : ""}
+    </div>
+  `;
+  if (actionLabel) {
+    document.getElementById("toast-action-btn")?.addEventListener("click", () => {
+      clearTimeout(showToast._t);
+      const onAction = state.toast?.onAction;
+      state.toast = null;
+      renderToast();
+      onAction?.();
+    });
+  }
+}
+
+function showToast(msg, opts = {}) {
+  clearTimeout(showToast._t);
+  state.toast = { msg, actionLabel: opts.actionLabel, onAction: opts.onAction };
+  renderToast();
+  showToast._t = setTimeout(() => {
+    state.toast = null;
+    renderToast();
+  }, opts.duration || 2200);
+}
+
+// ---------------------------------------------------------------------------
+// Render: views
+// ---------------------------------------------------------------------------
+
+function renderView() {
+  let html;
+  if (state.view === "feed" && state.detailId) {
+    const clip = state.clips.find((c) => c.id === state.detailId);
+    html = clip ? detailView(clip) : (state.detailId = null) || feedView();
+  } else if (state.view === "feed") html = feedView();
+  else if (state.view === "compose") html = composeView();
+  else if (state.view === "settings") html = settingsView();
+
+  root.innerHTML = `<div class="view-fade">${html}</div>`;
+  root.scrollTop = 0;
+  afterRenderHooks();
+}
+
+function afterRenderHooks() {
+  // Swap broken remote favicons for a local fallback glyph without inline
+  // event-handler attributes (disallowed by the extension CSP).
+  root.querySelectorAll("img.js-favicon").forEach((img) => {
+    img.addEventListener("error", () => {
+      img.replaceWith(iconNode("globe", 14, "favicon-fallback"));
+    });
+  });
+}
+
+function iconNode(name, size, className) {
+  const span = document.createElement("span");
+  span.className = `favicon-fallback-wrap ${className || ""}`;
+  span.innerHTML = icon(name, { size });
+  return span;
+}
+
+// --- Feed --------------------------------------------------------------
+
+function filteredClips() {
+  let list = [...state.clips];
+  if (state.filter === "pinned") list = list.filter((c) => c.pinned);
+  else if (state.filter !== "all") list = list.filter((c) => c.kind === state.filter);
+
+  if (state.tagFilter) {
+    list = list.filter((c) => (c.tags || []).includes(state.tagFilter));
+  }
+
+  if (state.search.trim()) {
+    const q = state.search.trim().toLowerCase();
+    list = list.filter((c) => {
+      const hay = [
+        c.quote,
+        c.mediaTitle,
+        c.channel,
+        c.source?.title,
+        c.source?.siteName,
+        c.comment?.text,
+        (c.tags || []).join(" "),
+      ]
+        .join(" ")
+        .toLowerCase();
+      return hay.includes(q);
+    });
+  }
+
+  list.sort((a, b) => {
+    if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
+    if (state.sort === "oldest") return new Date(a.createdAt) - new Date(b.createdAt);
+    if (state.sort === "az") {
+      const at = (a.mediaTitle || a.quote || a.source?.title || "").toLowerCase();
+      const bt = (b.mediaTitle || b.quote || b.source?.title || "").toLowerCase();
+      return at.localeCompare(bt);
+    }
+    return new Date(b.createdAt) - new Date(a.createdAt);
+  });
+  return list;
+}
+
+function feedView() {
+  const list = filteredClips();
+
+  if (state.clips.length === 0) {
+    return emptyState({
+      icon: "scissors",
+      title: "Your archive starts here",
+      body: "Highlight a passage, right-click a video, or capture the tab you're on. Every riff keeps its source attached, permanently.",
+      actionLabel: "Capture something",
+      actionTab: "compose",
+    });
+  }
+
+  if (list.length === 0) {
+    return emptyState({
+      icon: "search",
+      title: "Nothing matches",
+      body: "Try a different search term or clear your filters.",
+    });
+  }
+
+  return `
+    <div class="feed-list">
+      ${list.map((c) => clipCard(c)).join("")}
+    </div>
+    ${state.selectMode ? bulkBar() : ""}
+  `;
+}
+
+function bulkBar() {
+  const n = state.selectedIds.size;
+  return `
+    <div class="bulk-bar">
+      <button class="btn btn-outline btn-sm" id="btn-select-all">${icon("checkSquare", { size: 13 })}<span>${n === filteredClips().length && n > 0 ? "Clear all" : "Select all"}</span></button>
+      <div class="bulk-bar-spacer"></div>
+      <button class="btn btn-outline btn-sm" id="btn-bulk-tag" ${n === 0 ? "disabled" : ""}>${icon("hash", { size: 13 })}<span>Tag</span></button>
+      <button class="btn btn-outline btn-sm" id="btn-bulk-copy" ${n === 0 ? "disabled" : ""}>${icon("copy", { size: 13 })}<span>Copy</span></button>
+      <button class="btn btn-outline btn-sm btn-danger-outline" id="btn-bulk-delete" ${n === 0 ? "disabled" : ""}>${icon("trash", { size: 13 })}<span>Delete</span></button>
+    </div>
+  `;
+}
+
+function emptyState({ icon: iconName, title, body, actionLabel, actionTab }) {
+  return `
+    <div class="empty-state">
+      <div class="empty-state-icon">${icon(iconName, { size: 26, strokeWidth: 1.5 })}</div>
+      <h2>${escapeHtml(title)}</h2>
+      <p>${escapeHtml(body)}</p>
+      ${actionLabel ? `<button class="btn btn-primary" data-tab="${actionTab}">${escapeHtml(actionLabel)}</button>` : ""}
+    </div>
+  `;
+}
+
+function clipCard(c) {
+  const meta = KIND_META[c.kind] || KIND_META.text;
+  const timeLabel = timeAgo(c.createdAt);
+  const favicon = c.source?.favicon;
+
+  let bodyHtml = "";
+  if (c.kind === "text") {
+    bodyHtml = `<blockquote class="clip-quote">${escapeHtml(truncate(c.quote, 220))}</blockquote>`;
+  } else {
+    const range = formatRange(c.startSeconds, c.endSeconds);
+    bodyHtml = `
+      <div class="clip-media-row">
+        <span class="clip-media-badge" style="--accent:${meta.color}">${icon(c.kind === "video" ? "video" : "headphones", { size: 13 })}${range}</span>
+        <span class="clip-media-title">${escapeHtml(truncate(c.mediaTitle || c.source?.title || "Untitled", 80))}</span>
+      </div>
+      ${c.channel ? `<div class="clip-media-channel">${escapeHtml(c.channel)}</div>` : ""}
+    `;
+  }
+
+  let commentHtml = "";
+  if (c.comment?.kind === "voice" && c.comment.audioDataUrl) {
+    commentHtml = `
+      <div class="comment-row comment-voice" data-audio-src="${escapeAttr(c.comment.audioDataUrl)}">
+        <button class="mini-play" data-action="play-audio" data-id="${c.id}">${icon("play", { size: 13 })}</button>
+        <div class="voice-wave" aria-hidden="true">${voiceBars()}</div>
+        <span class="voice-duration">${formatDuration(c.comment.audioDurationSeconds || 0)}</span>
+      </div>
+    `;
+  } else if (c.comment?.text) {
+    commentHtml = `<p class="comment-text">${escapeHtml(truncate(c.comment.text, 200))}</p>`;
+  }
+
+  const tagsHtml = (c.tags || []).length
+    ? `<div class="clip-tags">${c.tags
+        .map(
+          (t) =>
+            `<button class="tag-chip ${state.tagFilter === t ? "tag-chip-active" : ""}" data-action="filter-tag" data-tag="${escapeAttr(t)}">${icon("hash", { size: 10 })}${escapeHtml(t)}</button>`
+        )
+        .join("")}</div>`
+    : "";
+
+  const selected = state.selectedIds.has(c.id);
+  const bodyAction = state.selectMode ? "toggle-select" : "open-detail";
+
+  return `
+    <article class="clip-card ${state.selectMode ? "is-selectable" : ""} ${selected ? "is-selected" : ""}" data-id="${c.id}">
+      <div class="clip-card-inner">
+        <header class="clip-card-header">
+          <button class="clip-source" data-action="${bodyAction}" data-id="${c.id}">
+            ${
+              state.selectMode
+                ? `<span class="select-check ${selected ? "is-checked" : ""}">${selected ? icon("check", { size: 11 }) : ""}</span>`
+                : favicon
+                  ? `<img class="js-favicon" src="${escapeAttr(favicon)}" alt="" width="14" height="14" />`
+                  : iconNode("globe", 14).outerHTML
+            }
+            <span class="clip-site">${escapeHtml(c.source?.siteName || "Unknown source")}</span>
+            <span class="kind-dot" style="background:${meta.color}" title="${meta.label}"></span>
+            <span class="clip-time">${timeLabel}</span>
+          </button>
+          ${
+            state.selectMode
+              ? ""
+              : `<div class="menu-wrap">
+            <button class="icon-btn-sm" data-action="toggle-menu" data-id="${c.id}" title="More">${icon("moreVertical", { size: 15 })}</button>
+            ${state.openMenuId === c.id ? cardMenu(c.id) : ""}
+          </div>`
+          }
+        </header>
+
+        <div class="clip-body" data-action="${bodyAction}" data-id="${c.id}">
+          ${bodyHtml}
+          ${commentHtml}
+        </div>
+        ${tagsHtml}
+
+        ${
+          state.selectMode
+            ? ""
+            : `<footer class="clip-card-footer">
+          <button class="footer-btn ${c.pinned ? "is-active" : ""}" data-action="pin" data-id="${c.id}" title="${c.pinned ? "Unpin" : "Pin"}">
+            ${icon("pin", { size: 14 })}${c.pinned ? "<span>Pinned</span>" : ""}
+          </button>
+          <a class="footer-link" href="${escapeAttr(c.source?.url || "#")}" target="_blank" rel="noopener noreferrer" title="Open source">
+            ${icon("externalLink", { size: 14 })}<span>Source</span>
+          </a>
+        </footer>`
+        }
+      </div>
+    </article>
+  `;
+}
+
+function cardMenu(id) {
+  return `
+    <div class="dropdown-menu" data-menu-for="${id}">
+      <button class="dropdown-item" data-action="edit" data-id="${id}">${icon("edit", { size: 14 })}<span>Edit</span></button>
+      <button class="dropdown-item" data-action="export" data-id="${id}">${icon("share", { size: 14 })}<span>Export landing page</span></button>
+      <button class="dropdown-item" data-action="copy" data-id="${id}">${icon("copy", { size: 14 })}<span>Copy as text</span></button>
+      <div class="dropdown-divider"></div>
+      <button class="dropdown-item dropdown-item-danger" data-action="delete" data-id="${id}">${icon("trash", { size: 14 })}<span>Delete</span></button>
+    </div>
+  `;
+}
+
+function detailView(c) {
+  const meta = KIND_META[c.kind] || KIND_META.text;
+
+  let mediaHtml = "";
+  if (c.kind === "text") {
+    mediaHtml = `<blockquote class="detail-quote">${escapeHtml(c.quote)}</blockquote>`;
+  } else {
+    mediaHtml = `
+      <a class="detail-media" href="${escapeAttr(c.source?.url)}" target="_blank" rel="noopener noreferrer">
+        <span class="detail-media-icon">${icon(c.kind === "video" ? "video" : "headphones", { size: 18 })}</span>
+        <span class="detail-media-text">
+          <strong>${escapeHtml(c.mediaTitle || "Untitled")}</strong>
+          <span>${formatRange(c.startSeconds, c.endSeconds)}${c.channel ? ` \u00b7 ${escapeHtml(c.channel)}` : ""}</span>
+        </span>
+        ${icon("arrowUpRight", { size: 15, className: "detail-media-go" })}
+      </a>
+    `;
+  }
+
+  let commentHtml = "";
+  if (c.comment?.kind === "voice" && c.comment.audioDataUrl) {
+    commentHtml = `
+      <div class="comment-row comment-voice">
+        <button class="mini-play" data-action="play-audio" data-id="${c.id}">${icon("play", { size: 14 })}</button>
+        <div class="voice-wave" aria-hidden="true">${voiceBars()}</div>
+        <span class="voice-duration">${formatDuration(c.comment.audioDurationSeconds || 0)}</span>
+      </div>
+    `;
+  } else if (c.comment?.text) {
+    commentHtml = `<p class="comment-text detail-comment-text">${escapeHtml(c.comment.text)}</p>`;
+  }
+
+  const tagsHtml = (c.tags || []).length
+    ? `<div class="clip-tags">${c.tags.map((t) => `<span class="tag-chip">${escapeHtml(t)}</span>`).join("")}</div>`
+    : "";
+
+  return `
+    <div class="detail-view">
+      <div class="detail-source">
+        ${c.source?.favicon ? `<img class="js-favicon" src="${escapeAttr(c.source.favicon)}" alt="" width="18" height="18" />` : iconNode("globe", 18).outerHTML}
+        <div class="detail-source-text">
+          <strong>${escapeHtml(c.source?.title || c.source?.siteName || "Untitled source")}</strong>
+          <span>${escapeHtml(c.source?.siteName || "")}${c.source?.author ? ` \u00b7 ${escapeHtml(c.source.author)}` : ""}</span>
+        </div>
+        <span class="kind-dot" style="background:${meta.color}" title="${meta.label}"></span>
+        <button class="footer-btn ${c.pinned ? "is-active" : ""}" data-action="pin" data-id="${c.id}" title="${c.pinned ? "Unpin" : "Pin"}">
+          ${icon("pin", { size: 15 })}
+        </button>
+      </div>
+
+      ${mediaHtml}
+      ${commentHtml ? `<h3 class="detail-label">Your take</h3>${commentHtml}` : ""}
+      ${tagsHtml}
+
+      <div class="detail-meta">
+        <span>${icon("clock", { size: 13 })} ${escapeHtml(timeAgo(c.createdAt))}</span>
+        <a href="${escapeAttr(c.source?.url || "#")}" target="_blank" rel="noopener noreferrer">${icon("externalLink", { size: 13 })} Open source</a>
+      </div>
+    </div>
+  `;
+}
+
+function voiceBars() {
+  const heights = [5, 9, 13, 8, 15, 6, 11, 7, 10, 5];
+  return heights.map((h) => `<span style="height:${h}px"></span>`).join("");
+}
+
+// --- Compose -------------------------------------------------------------
+
+function openComposerFromCapture(payload) {
+  state.editingId = null;
+  state.draft = draftFromCapture(payload);
+  state.view = "compose";
+}
+
+function draftFromCapture(payload) {
+  const base = {
+    kind: payload.kind,
+    source: payload.source,
+    quote: payload.quote || "",
+    mediaTitle: payload.mediaTitle || "",
+    channel: payload.channel || "",
+    startSeconds: payload.startSeconds || 0,
+    endSeconds: null,
+    totalDuration: payload.totalDuration || null,
+    comment: { kind: "text", text: "", audioDataUrl: null, audioDurationSeconds: null },
+    tags: [],
+  };
+  if (payload.kind !== "text") {
+    const cap = Math.min(90, payload.durationCap || 90);
+    const remaining = base.totalDuration ? Math.max(1, base.totalDuration - base.startSeconds) : cap;
+    base.clipLength = Math.min(cap, remaining || cap, 60);
+    base.endSeconds = base.startSeconds + base.clipLength;
+  }
+  return base;
+}
+
+function blankDraft() {
+  const s = state.settings || {};
+  return {
+    kind: "text",
+    source: { url: "", title: "", siteName: "", favicon: "", author: null },
+    quote: "",
+    mediaTitle: "",
+    channel: "",
+    startSeconds: 0,
+    endSeconds: null,
+    clipLength: s.defaultClipLength || 30,
+    totalDuration: null,
+    comment: { kind: s.defaultCommentKind || "text", text: "", audioDataUrl: null, audioDurationSeconds: null },
+    tags: [],
+  };
+}
+
+function composeView() {
+  if (!state.draft) state.draft = blankDraft();
+  const d = state.draft;
+  const isEdit = !!state.editingId;
+  const meta = KIND_META[d.kind] || KIND_META.text;
+
+  const hasSource = !!d.source?.url;
+
+  return `
+    <div class="composer">
+      <div class="composer-heading">
+        <h2>${isEdit ? "Edit riff" : "New riff"}</h2>
+        ${!isEdit ? `<button class="btn btn-ghost btn-sm" id="btn-capture-tab">${icon("scissors", { size: 14 })}<span>Capture this tab</span></button>` : ""}
+      </div>
+
+      ${
+        hasSource
+          ? `
+        <div class="source-pill">
+          ${d.source.favicon ? `<img class="js-favicon" src="${escapeAttr(d.source.favicon)}" width="16" height="16" alt="" />` : iconNode("globe", 16).outerHTML}
+          <div class="source-pill-text">
+            <strong>${escapeHtml(truncate(d.source.title || d.source.siteName, 60))}</strong>
+            <span>${escapeHtml(d.source.siteName || "")}</span>
+          </div>
+        </div>
+      `
+          : `
+        <div class="field-group">
+          <label>Source URL</label>
+          <input type="text" id="input-source-url" placeholder="https://" value="${escapeAttr(d.source.url)}" />
+        </div>
+        <div class="field-group">
+          <label>Source title</label>
+          <input type="text" id="input-source-title" placeholder="What is this from?" value="${escapeAttr(d.source.title)}" />
+        </div>
+      `
+      }
+
+      <div class="segmented" id="kind-segmented">
+        ${["text", "video", "audio"]
+          .map(
+            (k) => `<button class="segmented-btn ${d.kind === k ? "is-active" : ""}" data-kind="${k}">
+              ${icon(KIND_META[k].icon, { size: 14 })}<span>${KIND_META[k].label}</span>
+            </button>`
+          )
+          .join("")}
+      </div>
+
+      ${d.kind === "text" ? textFields(d) : mediaFields(d)}
+
+      <div class="field-group">
+        <label>Your take</label>
+        <div class="comment-toggle">
+          <button class="pill-btn ${d.comment.kind === "text" ? "is-active" : ""}" data-comment-kind="text">${icon("edit", { size: 13 })}<span>Write</span></button>
+          <button class="pill-btn ${d.comment.kind === "voice" ? "is-active" : ""}" data-comment-kind="voice">${icon("mic", { size: 13 })}<span>Record</span></button>
+        </div>
+        ${d.comment.kind === "text" ? commentTextField(d) : commentVoiceField(d)}
+      </div>
+
+      <div class="field-group">
+        <label>Tags</label>
+        <input type="text" id="input-tags" placeholder="comma, separated, tags" value="${escapeAttr((d.tags || []).join(", "))}" />
+      </div>
+
+      <div class="composer-actions">
+        ${isEdit ? `<button class="btn btn-ghost" id="btn-cancel-edit">Cancel</button>` : ""}
+        <button class="btn btn-primary" id="btn-save-clip">${icon("check", { size: 15 })}<span>${isEdit ? "Save changes" : "Save riff"}</span></button>
+      </div>
+    </div>
+  `;
+}
+
+function textFields(d) {
+  return `
+    <div class="field-group">
+      <label>Quoted passage</label>
+      <textarea id="input-quote" rows="5" placeholder="Paste or type the passage you're riffing on&hellip;">${escapeHtml(d.quote)}</textarea>
+    </div>
+  `;
+}
+
+function mediaFields(d) {
+  const start = d.startSeconds || 0;
+  const length = d.clipLength || Math.max(1, (d.endSeconds || start + 30) - start);
+  const maxLen = d.totalDuration ? Math.min(90, Math.max(1, d.totalDuration - start)) : 90;
+  return `
+    <div class="field-group">
+      <label>${d.kind === "video" ? "Video" : "Episode"} title</label>
+      <input type="text" id="input-media-title" placeholder="Title" value="${escapeAttr(d.mediaTitle)}" />
+    </div>
+    <div class="field-group">
+      <label>Creator / channel</label>
+      <input type="text" id="input-media-channel" placeholder="Optional" value="${escapeAttr(d.channel)}" />
+    </div>
+    <div class="field-group field-group-row">
+      <div>
+        <label>Start</label>
+        <input type="text" id="input-start" value="${formatDuration(start)}" placeholder="0:00" />
+      </div>
+      <div>
+        <label>Length (sec, max 90)</label>
+        <input type="number" id="input-length" min="1" max="${maxLen}" value="${length}" />
+      </div>
+    </div>
+    <p class="hint-text">Clip plays ${formatDuration(start)} &rarr; ${formatDuration(start + length)}. The landing page links back to the original at this timestamp &mdash; Riff never re-hosts the source file.</p>
+  `;
+}
+
+function commentTextField(d) {
+  return `<textarea id="input-comment-text" rows="4" placeholder="What's your take?">${escapeHtml(d.comment.text || "")}</textarea>`;
+}
+
+function commentVoiceField(d) {
+  const rec = state.recorder;
+  if (rec.active) {
+    return `
+      <div class="voice-recorder is-recording">
+        <span class="rec-dot"></span>
+        <span class="rec-timer">${formatDuration(rec.elapsedSeconds)}</span>
+        <button class="btn btn-danger btn-sm" id="btn-stop-recording">${icon("pause", { size: 13 })}<span>Stop</span></button>
+      </div>
+    `;
+  }
+  if (d.comment.audioDataUrl) {
+    return `
+      <div class="voice-recorder has-audio">
+        <button class="mini-play" id="btn-preview-audio">${icon("play", { size: 14 })}</button>
+        <div class="voice-wave" aria-hidden="true">${voiceBars()}</div>
+        <span class="voice-duration">${formatDuration(d.comment.audioDurationSeconds || 0)}</span>
+        <button class="footer-btn footer-btn-danger" id="btn-discard-audio" title="Re-record">${icon("trash", { size: 13 })}</button>
+      </div>
+    `;
+  }
+  return `
+    <div class="voice-recorder">
+      <button class="btn btn-outline btn-sm" id="btn-start-recording">${icon("mic", { size: 14 })}<span>Record a voice note</span></button>
+    </div>
+  `;
+}
+
+// --- Settings --------------------------------------------------------------
+
+function settingsView() {
+  const s = state.settings;
+  const tags = db.allTagsWithCounts(state.clips);
+  const stats = computeStats();
+
+  return `
+    <div class="settings">
+      <section class="settings-section">
+        <h3>Appearance</h3>
+        <div class="segmented" id="theme-segmented">
+          ${["light", "dark", "system"]
+            .map(
+              (t) =>
+                `<button class="segmented-btn ${s.theme === t ? "is-active" : ""}" data-theme="${t}">
+                  ${icon(t === "light" ? "sun" : t === "dark" ? "moon" : "square", { size: 13 })}
+                  <span>${t[0].toUpperCase() + t.slice(1)}</span>
+                </button>`
+            )
+            .join("")}
+        </div>
+        <label class="settings-sublabel">Accent color</label>
+        <div class="swatch-row" id="accent-swatches">
+          ${Object.entries(ACCENTS)
+            .map(
+              ([key, val]) =>
+                `<button class="swatch ${s.accentColor === key ? "is-active" : ""}" data-accent="${key}" style="background:${val.light}" title="${key[0].toUpperCase() + key.slice(1)}">${s.accentColor === key ? icon("check", { size: 12 }) : ""}</button>`
+            )
+            .join("")}
+        </div>
+        <label class="settings-sublabel">Density</label>
+        <div class="segmented" id="density-segmented">
+          ${["comfortable", "compact"]
+            .map(
+              (d) =>
+                `<button class="segmented-btn ${s.density === d ? "is-active" : ""}" data-density="${d}">
+                  ${icon("sliders", { size: 13 })}<span>${d[0].toUpperCase() + d.slice(1)}</span>
+                </button>`
+            )
+            .join("")}
+        </div>
+      </section>
+
+      <section class="settings-section">
+        <h3>Capture defaults</h3>
+        <div class="field-group field-group-row">
+          <div>
+            <label>Default clip length (sec)</label>
+            <input type="number" id="input-default-length" min="5" max="90" value="${s.defaultClipLength}" />
+          </div>
+          <div>
+            <label>Default comment</label>
+            <div class="segmented" id="default-comment-segmented">
+              <button class="segmented-btn ${s.defaultCommentKind === "text" ? "is-active" : ""}" data-default-comment="text">${icon("edit", { size: 13 })}<span>Write</span></button>
+              <button class="segmented-btn ${s.defaultCommentKind === "voice" ? "is-active" : ""}" data-default-comment="voice">${icon("mic", { size: 13 })}<span>Record</span></button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="settings-section">
+        <h3>Your archive</h3>
+        <div class="stat-grid">
+          <div class="stat-cell"><strong>${stats.total}</strong><span>Total riffs</span></div>
+          <div class="stat-cell"><strong>${stats.text}</strong><span>Text</span></div>
+          <div class="stat-cell"><strong>${stats.video}</strong><span>Video</span></div>
+          <div class="stat-cell"><strong>${stats.audio}</strong><span>Audio</span></div>
+          <div class="stat-cell"><strong>${stats.pinned}</strong><span>Pinned</span></div>
+          <div class="stat-cell"><strong>${tags.length}</strong><span>Tags</span></div>
+        </div>
+        ${stats.oldest ? `<p class="settings-body">First riff ${escapeHtml(timeAgo(stats.oldest))}.</p>` : ""}
+      </section>
+
+      ${
+        tags.length
+          ? `
+      <section class="settings-section">
+        <h3>Tags</h3>
+        <div class="tag-manage-list">
+          ${tags
+            .map(
+              (t) => `
+            <div class="tag-manage-row">
+              <button class="tag-chip" data-action="filter-tag-settings" data-tag="${escapeAttr(t.tag)}">${icon("hash", { size: 10 })}${escapeHtml(t.tag)}</button>
+              <span class="tag-count">${t.count}</span>
+              <button class="icon-btn-sm" data-action="rename-tag" data-tag="${escapeAttr(t.tag)}" title="Rename">${icon("edit", { size: 13 })}</button>
+              <button class="icon-btn-sm" data-action="delete-tag" data-tag="${escapeAttr(t.tag)}" title="Delete">${icon("trash", { size: 13 })}</button>
+            </div>`
+            )
+            .join("")}
+        </div>
+      </section>`
+          : ""
+      }
+
+      <section class="settings-section">
+        <h3>Your data</h3>
+        <p class="settings-body">${state.clips.length} riff${state.clips.length === 1 ? "" : "s"} stored on this device, using ${formatBytes(stats.bytes)}. Riff has no server in this build &mdash; nothing you capture leaves your browser unless you export it.</p>
+        <div class="settings-row-actions">
+          <button class="btn btn-outline btn-sm" id="btn-export-data">${icon("download", { size: 13 })}<span>Export as JSON</span></button>
+          <button class="btn btn-outline btn-sm" id="btn-import-data">${icon("upload", { size: 13 })}<span>Import JSON</span></button>
+          <input type="file" id="input-import-file" accept="application/json" hidden />
+          <button class="btn btn-outline btn-sm btn-danger-outline" id="btn-clear-data">${icon("trash", { size: 13 })}<span>Clear all riffs</span></button>
+        </div>
+      </section>
+
+      <section class="settings-section">
+        <h3>Attribution &amp; takedowns</h3>
+        <p class="settings-body">Every riff keeps its source link and, for video, links back to the original timestamp rather than re-hosting the file. If you're a rights holder and want a riff of your work removed, use the "Open source" link on any card to reach the original, or clear it from this device via the card's delete action.</p>
+      </section>
+
+      <section class="settings-section">
+        <h3>Shortcuts</h3>
+        <div class="shortcut-row"><span>Open Riff</span><kbd>Ctrl/Cmd + Shift + R</kbd></div>
+        <div class="shortcut-row"><span>Riff the selection</span><kbd>Ctrl/Cmd + Shift + K</kbd></div>
+        <div class="shortcut-row"><span>Focus search</span><kbd>/</kbd></div>
+        <div class="shortcut-row"><span>New riff</span><kbd>N</kbd></div>
+        <div class="shortcut-row"><span>Close menu / detail</span><kbd>Esc</kbd></div>
+      </section>
+
+      <section class="settings-section settings-about">
+        <div class="about-mark">R</div>
+        <p>Riff &mdash; version 1.1.0</p>
+        <p class="settings-muted">Clip, quote, comment. Attribution welded in, not bolted on.</p>
+      </section>
+    </div>
+  `;
+}
+
+function computeStats() {
+  const clips = state.clips;
+  const stats = {
+    total: clips.length,
+    text: clips.filter((c) => c.kind === "text").length,
+    video: clips.filter((c) => c.kind === "video").length,
+    audio: clips.filter((c) => c.kind === "audio").length,
+    pinned: clips.filter((c) => c.pinned).length,
+    oldest: clips.length ? clips.reduce((a, b) => (new Date(a.createdAt) < new Date(b.createdAt) ? a : b)).createdAt : null,
+    bytes: new Blob([JSON.stringify(clips)]).size,
+  };
+  return stats;
+}
+
+function formatBytes(bytes) {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+// ---------------------------------------------------------------------------
+// Events
+// ---------------------------------------------------------------------------
+
+document.addEventListener("click", onGlobalClick);
+document.addEventListener("input", onGlobalInput);
+document.addEventListener("change", onGlobalChange);
+document.addEventListener("keydown", onGlobalKeydown);
+
+function onGlobalKeydown(e) {
+  const typing = ["INPUT", "TEXTAREA"].includes(document.activeElement?.tagName);
+
+  if (e.key === "Escape") {
+    if (state.openMenuId) {
+      state.openMenuId = null;
+      renderView();
+      renderHeaderTools();
+      return;
+    }
+    if (state.detailId) {
+      state.detailId = null;
+      render();
+      return;
+    }
+    if (typing) document.activeElement.blur();
+    return;
+  }
+
+  if (typing || e.metaKey || e.ctrlKey || e.altKey) return;
+
+  if (e.key === "/") {
+    e.preventDefault();
+    if (state.view !== "feed") goToTab("feed");
+    state.searchOpen = true;
+    render();
+    return;
+  }
+  if (e.key.toLowerCase() === "n") {
+    e.preventDefault();
+    goToTab("compose");
+  }
+}
+
+function onGlobalClick(e) {
+  const menuTrigger = e.target.closest('[data-action="toggle-menu"]');
+  if (menuTrigger) {
+    const id = menuTrigger.dataset.id;
+    state.openMenuId = state.openMenuId === id ? null : id;
+    renderView();
+    return;
+  }
+  if (e.target.closest("#btn-detail-menu")) {
+    state.openMenuId = state.openMenuId === "detail" ? null : "detail";
+    renderHeaderTools();
+    return;
+  }
+  if (e.target.closest("#btn-toggle-sort")) {
+    state.openMenuId = state.openMenuId === "sort" ? null : "sort";
+    renderHeaderTools();
+    return;
+  }
+  const sortOption = e.target.closest("[data-sort]");
+  if (sortOption) {
+    state.sort = sortOption.dataset.sort;
+    state.openMenuId = null;
+    render();
+    return;
+  }
+  if (e.target.closest("#btn-detail-back")) {
+    state.detailId = null;
+    state.openMenuId = null;
+    render();
+    return;
+  }
+  if (state.openMenuId && !e.target.closest(".menu-wrap")) {
+    state.openMenuId = null;
+    renderView();
+    renderHeaderTools();
+  }
+
+  const tagFilterBtn = e.target.closest('[data-action="filter-tag"]');
+  if (tagFilterBtn) {
+    const tag = tagFilterBtn.dataset.tag;
+    state.tagFilter = state.tagFilter === tag ? null : tag;
+    state.filtersOpen = true;
+    render();
+    return;
+  }
+  if (e.target.closest("[data-clear-tag]")) {
+    state.tagFilter = null;
+    render();
+    return;
+  }
+
+  if (e.target.closest("#btn-toggle-select")) {
+    state.selectMode = !state.selectMode;
+    state.selectedIds.clear();
+    render();
+    return;
+  }
+  if (e.target.closest("#btn-exit-select")) {
+    state.selectMode = false;
+    state.selectedIds.clear();
+    render();
+    return;
+  }
+  if (e.target.closest("#btn-select-all")) {
+    const ids = filteredClips().map((c) => c.id);
+    const allSelected = ids.length > 0 && ids.every((id) => state.selectedIds.has(id));
+    if (allSelected) state.selectedIds.clear();
+    else ids.forEach((id) => state.selectedIds.add(id));
+    render();
+    return;
+  }
+  if (e.target.closest("#btn-bulk-delete")) {
+    bulkDelete();
+    return;
+  }
+  if (e.target.closest("#btn-bulk-copy")) {
+    bulkCopy();
+    return;
+  }
+  if (e.target.closest("#btn-bulk-tag")) {
+    bulkAddTag();
+    return;
+  }
+
+  const selectTrigger = e.target.closest('[data-action="toggle-select"]');
+  if (selectTrigger) {
+    const id = selectTrigger.dataset.id;
+    if (state.selectedIds.has(id)) state.selectedIds.delete(id);
+    else state.selectedIds.add(id);
+    render();
+    return;
+  }
+
+  const playBtn = e.target.closest('[data-action="play-audio"]');
+  if (playBtn) {
+    const clip = state.clips.find((c) => c.id === playBtn.dataset.id) || (state.draft?.comment?.audioDataUrl ? state.draft : null);
+    playInlineAudio(clip?.comment?.audioDataUrl, playBtn);
+    return;
+  }
+
+  const detailTrigger = e.target.closest('[data-action="open-detail"]');
+  if (detailTrigger) {
+    state.detailId = detailTrigger.dataset.id;
+    state.openMenuId = null;
+    render();
+    return;
+  }
+
+  const tabBtn = e.target.closest("[data-tab]");
+  if (tabBtn) {
+    goToTab(tabBtn.dataset.tab);
+    return;
+  }
+
+  if (e.target.closest("#btn-toggle-search")) {
+    state.searchOpen = !state.searchOpen;
+    if (!state.searchOpen) state.search = "";
+    render();
+    return;
+  }
+  if (e.target.closest("#btn-toggle-filters")) {
+    state.filtersOpen = !state.filtersOpen;
+    render();
+    return;
+  }
+  const chip = e.target.closest("[data-filter]");
+  if (chip) {
+    state.filter = chip.dataset.filter;
+    renderView();
+    renderChipRow();
+    return;
+  }
+
+  const kindBtn = e.target.closest("#kind-segmented [data-kind]");
+  if (kindBtn) {
+    state.draft.kind = kindBtn.dataset.kind;
+    renderView();
+    return;
+  }
+
+  const themeBtn = e.target.closest("#theme-segmented [data-theme]");
+  if (themeBtn) {
+    setTheme(themeBtn.dataset.theme);
+    return;
+  }
+
+  const commentKindBtn = e.target.closest("[data-comment-kind]");
+  if (commentKindBtn) {
+    state.draft.comment.kind = commentKindBtn.dataset.commentKind;
+    renderView();
+    return;
+  }
+
+  if (e.target.closest("#btn-capture-tab")) {
+    captureActiveTab();
+    return;
+  }
+  if (e.target.closest("#btn-cancel-edit")) {
+    state.editingId = null;
+    state.draft = null;
+    goToTab("feed");
+    return;
+  }
+  if (e.target.closest("#btn-save-clip")) {
+    saveDraft();
+    return;
+  }
+  if (e.target.closest("#btn-start-recording")) {
+    startRecording();
+    return;
+  }
+  if (e.target.closest("#btn-stop-recording")) {
+    stopRecording();
+    return;
+  }
+  if (e.target.closest("#btn-discard-audio")) {
+    state.draft.comment.audioDataUrl = null;
+    state.draft.comment.audioDurationSeconds = null;
+    renderView();
+    return;
+  }
+  if (e.target.closest("#btn-preview-audio")) {
+    playInlineAudio(state.draft.comment.audioDataUrl, e.target.closest("#btn-preview-audio"));
+    return;
+  }
+
+  if (e.target.closest("#btn-export-data")) {
+    exportAllDataFile();
+    return;
+  }
+  if (e.target.closest("#btn-clear-data")) {
+    clearAllData();
+    return;
+  }
+  if (e.target.closest("#btn-import-data")) {
+    document.getElementById("input-import-file")?.click();
+    return;
+  }
+
+  const accentSwatch = e.target.closest("[data-accent]");
+  if (accentSwatch) {
+    setAccent(accentSwatch.dataset.accent);
+    return;
+  }
+  const densityBtn = e.target.closest("[data-density]");
+  if (densityBtn) {
+    setDensity(densityBtn.dataset.density);
+    return;
+  }
+  const defaultCommentBtn = e.target.closest("[data-default-comment]");
+  if (defaultCommentBtn) {
+    db.saveSettings({ defaultCommentKind: defaultCommentBtn.dataset.defaultComment }).then((s) => {
+      state.settings = s;
+      renderView();
+    });
+    return;
+  }
+
+  const tagSettingsFilter = e.target.closest('[data-action="filter-tag-settings"]');
+  if (tagSettingsFilter) {
+    state.tagFilter = tagSettingsFilter.dataset.tag;
+    state.filtersOpen = true;
+    goToTab("feed");
+    return;
+  }
+  const renameTagBtn = e.target.closest('[data-action="rename-tag"]');
+  if (renameTagBtn) {
+    renameTagFlow(renameTagBtn.dataset.tag);
+    return;
+  }
+  const deleteTagBtn = e.target.closest('[data-action="delete-tag"]');
+  if (deleteTagBtn) {
+    deleteTagFlow(deleteTagBtn.dataset.tag);
+    return;
+  }
+
+  const cardAction = e.target.closest("[data-action]");
+  if (cardAction) {
+    handleCardAction(cardAction.dataset.action, cardAction.dataset.id, cardAction);
+  }
+}
+
+function onGlobalInput(e) {
+  if (e.target.id === "search-input") {
+    state.search = e.target.value;
+    renderView();
+    return;
+  }
+  if (!state.draft) return;
+  const d = state.draft;
+  const id = e.target.id;
+  if (id === "input-source-url") d.source.url = e.target.value;
+  else if (id === "input-source-title") d.source.title = e.target.value;
+  else if (id === "input-quote") d.quote = e.target.value;
+  else if (id === "input-media-title") d.mediaTitle = e.target.value;
+  else if (id === "input-media-channel") d.channel = e.target.value;
+  else if (id === "input-comment-text") d.comment.text = e.target.value;
+  else if (id === "input-length") {
+    const len = clamp(parseInt(e.target.value || "1", 10), 1, 90);
+    d.clipLength = len;
+    d.endSeconds = (d.startSeconds || 0) + len;
+  } else if (id === "input-start") {
+    const secs = parseDurationInput(e.target.value);
+    if (secs != null) {
+      d.startSeconds = secs;
+      d.endSeconds = secs + (d.clipLength || 30);
+    }
+  } else {
+    return;
+  }
+  scheduleDraftAutosave();
+}
+
+function onGlobalChange(e) {
+  if (e.target.id === "input-tags" && state.draft) {
+    state.draft.tags = e.target.value
+      .split(",")
+      .map((t) => t.trim())
+      .filter(Boolean)
+      .slice(0, 8);
+    scheduleDraftAutosave();
+    return;
+  }
+  if (e.target.id === "input-default-length") {
+    const len = clamp(parseInt(e.target.value || "30", 10), 5, 90);
+    db.saveSettings({ defaultClipLength: len }).then((s) => {
+      state.settings = s;
+    });
+    return;
+  }
+  if (e.target.id === "input-import-file") {
+    handleImportFile(e.target.files?.[0]);
+    return;
+  }
+}
+
+function isDraftMeaningful(d) {
+  if (!d) return false;
+  return !!(
+    (d.quote && d.quote.trim()) ||
+    (d.mediaTitle && d.mediaTitle.trim()) ||
+    (d.comment?.text && d.comment.text.trim()) ||
+    d.comment?.audioDataUrl ||
+    (d.source?.url && d.source.url.trim())
+  );
+}
+
+function scheduleDraftAutosave() {
+  if (state.editingId || !state.draft) return;
+  clearTimeout(scheduleDraftAutosave._t);
+  scheduleDraftAutosave._t = setTimeout(() => {
+    if (isDraftMeaningful(state.draft)) db.saveDraftInProgress(state.draft);
+  }, 600);
+}
+
+async function maybeRestoreDraft() {
+  const saved = await db.getDraftInProgress();
+  if (!saved || !isDraftMeaningful(saved)) return;
+  if (state.view !== "compose" || state.editingId || isDraftMeaningful(state.draft)) return;
+  state.draft = saved;
+  renderView();
+  showToast("Restored your last unsaved draft");
+}
+
+function goToTab(tab) {
+  state.detailId = null;
+  state.openMenuId = null;
+  if (tab === "compose" && state.view !== "compose") {
+    state.editingId = null;
+    state.draft = blankDraft();
+    state.view = tab;
+    render();
+    maybeRestoreDraft();
+    return;
+  }
+  if (tab !== "compose" && state.recorder.active) {
+    stopRecording(true);
+  }
+  state.view = tab;
+  render();
+}
+
+function setTheme(theme) {
+  state.settings.theme = theme;
+  db.saveSettings({ theme });
+  applyTheme(theme);
+  renderView();
+}
+
+function setAccent(key) {
+  state.settings.accentColor = key;
+  db.saveSettings({ accentColor: key });
+  applyAccent(key);
+  renderView();
+}
+
+function setDensity(value) {
+  state.settings.density = value;
+  db.saveSettings({ density: value });
+  applyDensity(value);
+  renderView();
+}
+
+async function renameTagFlow(tag) {
+  const input = prompt(`Rename tag "${tag}" to:`, tag);
+  const next = (input || "").trim();
+  if (!next || next === tag) return;
+  state.clips = await db.renameTagEverywhere(tag, next);
+  if (state.tagFilter === tag) state.tagFilter = next;
+  renderView();
+  showToast("Tag renamed");
+}
+
+async function deleteTagFlow(tag) {
+  if (!confirm(`Remove the tag "${tag}" from all riffs?`)) return;
+  state.clips = await db.deleteTagEverywhere(tag);
+  if (state.tagFilter === tag) state.tagFilter = null;
+  renderView();
+  showToast("Tag removed");
+}
+
+async function handleImportFile(file) {
+  if (!file) return;
+  try {
+    const text = await file.text();
+    const data = JSON.parse(text);
+    const incoming = Array.isArray(data) ? data : Array.isArray(data.clips) ? data.clips : null;
+    if (!incoming) throw new Error("Unrecognized file format");
+    const { clips, added } = await db.importClips(incoming);
+    state.clips = clips;
+    renderView();
+    showToast(added > 0 ? `Imported ${added} riff${added === 1 ? "" : "s"}` : "Nothing new to import");
+  } catch (err) {
+    showToast("Could not read that file");
+  }
+}
+
+// --- Capture / composer actions --------------------------------------------
+
+async function captureActiveTab() {
+  const btn = document.getElementById("btn-capture-tab");
+  if (btn) btn.disabled = true;
+  try {
+    const response = await chrome.runtime.sendMessage({ type: "RIFF_CAPTURE_ACTIVE_TAB", mode: "auto" });
+    if (response?.ok) {
+      state.draft = draftFromCapture(response.payload);
+      renderView();
+      showToast("Captured from this tab");
+    } else {
+      showToast(response?.error || "Could not read this tab");
+    }
+  } catch (err) {
+    showToast("Could not read this tab");
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+async function saveDraft() {
+  const d = state.draft;
+  if (d.kind === "text" && !d.quote.trim()) {
+    showToast("Add a passage to quote");
+    return;
+  }
+  if (d.kind !== "text" && !d.mediaTitle.trim()) {
+    showToast("Give the clip a title");
+    return;
+  }
+  if (!d.source.url.trim()) {
+    showToast("Add a source URL");
+    return;
+  }
+
+  const payload = {
+    kind: d.kind,
+    source: d.source,
+    quote: d.quote,
+    mediaTitle: d.mediaTitle,
+    channel: d.channel,
+    startSeconds: d.startSeconds || 0,
+    endSeconds: d.endSeconds,
+    totalDuration: d.totalDuration,
+    comment: d.comment,
+    tags: d.tags || [],
+  };
+
+  if (state.editingId) {
+    await db.updateClip(state.editingId, payload);
+    showToast("Riff updated");
+  } else {
+    await db.createClip(payload);
+    await db.clearDraftInProgress();
+    showToast("Riff saved");
+  }
+
+  state.clips = await db.getAllClips();
+  state.editingId = null;
+  state.draft = null;
+  goToTab("feed");
+}
+
+// --- Voice recording ---------------------------------------------------
+
+async function startRecording() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const mr = new MediaRecorder(stream);
+    state.recorder.mediaRecorder = mr;
+    state.recorder.chunks = [];
+    state.recorder.active = true;
+    state.recorder.elapsedSeconds = 0;
+    state.recorder.startedAt = Date.now();
+
+    mr.ondataavailable = (ev) => {
+      if (ev.data.size > 0) state.recorder.chunks.push(ev.data);
+    };
+    mr.onstop = async () => {
+      stream.getTracks().forEach((t) => t.stop());
+      const blob = new Blob(state.recorder.chunks, { type: "audio/webm" });
+      const dataUrl = await blobToDataUrl(blob);
+      state.draft.comment.audioDataUrl = dataUrl;
+      state.draft.comment.audioDurationSeconds = state.recorder.elapsedSeconds;
+      state.recorder.active = false;
+      clearInterval(state.recorder.timerHandle);
+      renderView();
+    };
+
+    mr.start();
+    state.recorder.timerHandle = setInterval(() => {
+      state.recorder.elapsedSeconds = Math.floor((Date.now() - state.recorder.startedAt) / 1000);
+      const timerEl = document.querySelector(".rec-timer");
+      if (timerEl) timerEl.textContent = formatDuration(state.recorder.elapsedSeconds);
+      if (state.recorder.elapsedSeconds >= 90) stopRecording();
+    }, 250);
+
+    renderView();
+  } catch (err) {
+    showToast("Microphone access denied");
+  }
+}
+
+function stopRecording(silent) {
+  const mr = state.recorder.mediaRecorder;
+  if (mr && mr.state !== "inactive") {
+    mr.stop();
+  } else {
+    state.recorder.active = false;
+    clearInterval(state.recorder.timerHandle);
+  }
+  if (!silent) return;
+}
+
+function blobToDataUrl(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
+
+let activeAudioEl = null;
+function playInlineAudio(src, btn) {
+  if (!src) return;
+  if (activeAudioEl) {
+    activeAudioEl.pause();
+    activeAudioEl = null;
+  }
+  const audio = new Audio(src);
+  activeAudioEl = audio;
+  audio.play();
+  if (btn) {
+    btn.innerHTML = icon("pause", { size: 14 });
+    audio.onended = () => {
+      btn.innerHTML = icon("play", { size: 14 });
+    };
+  }
+}
+
+// --- Card actions --------------------------------------------------------
+
+async function handleCardAction(action, id, el) {
+  const clip = state.clips.find((c) => c.id === id);
+  if (!clip) return;
+
+  if (action === "pin") {
+    await db.togglePin(id);
+    state.clips = await db.getAllClips();
+    renderView();
+    return;
+  }
+
+  state.openMenuId = null;
+
+  if (action === "edit") {
+    state.editingId = id;
+    state.detailId = null;
+    state.draft = {
+      ...clip,
+      clipLength: clip.endSeconds != null ? Math.max(1, clip.endSeconds - clip.startSeconds) : 30,
+      tags: [...(clip.tags || [])],
+      comment: { ...clip.comment },
+      source: { ...clip.source },
+    };
+    state.view = "compose";
+    render();
+    return;
+  }
+
+  if (action === "delete") {
+    await deleteClipFlow(clip);
+    return;
+  }
+
+  if (action === "copy") {
+    const text = clipToPlainText(clip);
+    await navigator.clipboard.writeText(text);
+    render();
+    showToast("Copied to clipboard");
+    return;
+  }
+
+  if (action === "export") {
+    const html = buildLandingPageHTML(clip);
+    downloadFile(`${slugify(clip.mediaTitle || clip.quote || "riff")}.html`, html, "text/html");
+    render();
+    showToast("Landing page downloaded");
+    return;
+  }
+
+  if (action === "play-audio") {
+    playInlineAudio(clip.comment.audioDataUrl, el);
+    return;
+  }
+}
+
+async function deleteClipFlow(clip) {
+  state.clips = await db.deleteClip(clip.id);
+  if (state.detailId === clip.id) state.detailId = null;
+  render();
+  showToast("Riff deleted", {
+    actionLabel: "Undo",
+    duration: 5000,
+    onAction: async () => {
+      state.clips = await db.restoreClip(clip);
+      render();
+      showToast("Riff restored");
+    },
+  });
+}
+
+async function bulkDelete() {
+  const ids = [...state.selectedIds];
+  if (ids.length === 0) return;
+  const removed = state.clips.filter((c) => ids.includes(c.id));
+  let clips = await db.getAllClips();
+  clips = clips.filter((c) => !ids.includes(c.id));
+  await db.saveAllClips(clips);
+  state.clips = clips;
+  state.selectMode = false;
+  state.selectedIds = new Set();
+  render();
+  showToast(`${removed.length} riff${removed.length === 1 ? "" : "s"} deleted`, {
+    actionLabel: "Undo",
+    duration: 5000,
+    onAction: async () => {
+      let current = await db.getAllClips();
+      current = [...removed, ...current];
+      await db.saveAllClips(current);
+      state.clips = current;
+      render();
+      showToast("Restored");
+    },
+  });
+}
+
+async function bulkCopy() {
+  const ids = [...state.selectedIds];
+  if (ids.length === 0) return;
+  const clips = state.clips.filter((c) => ids.includes(c.id));
+  const text = clips.map(clipToPlainText).join("\n\n---\n\n");
+  await navigator.clipboard.writeText(text);
+  showToast(`Copied ${clips.length} riff${clips.length === 1 ? "" : "s"}`);
+}
+
+async function bulkAddTag() {
+  const ids = [...state.selectedIds];
+  if (ids.length === 0) return;
+  const input = prompt("Add a tag to the selected riffs:");
+  const tag = (input || "").trim();
+  if (!tag) return;
+  const clips = await db.getAllClips();
+  clips.forEach((c) => {
+    if (!ids.includes(c.id)) return;
+    const set = new Set(c.tags || []);
+    set.add(tag);
+    c.tags = [...set];
+  });
+  await db.saveAllClips(clips);
+  state.clips = clips;
+  render();
+  showToast(`Tagged ${ids.length} riff${ids.length === 1 ? "" : "s"}`);
+}
+
+function clipToPlainText(c) {
+  const lines = [];
+  if (c.kind === "text") {
+    lines.push(`"${c.quote}"`);
+  } else {
+    lines.push(`${c.mediaTitle} (${formatRange(c.startSeconds, c.endSeconds)})`);
+  }
+  if (c.comment?.text) lines.push("", c.comment.text);
+  lines.push("", `via ${c.source?.siteName || c.source?.url}`, c.source?.url || "");
+  lines.push("", "Clipped with Riff");
+  return lines.join("\n");
+}
+
+// --- Settings actions ------------------------------------------------------
+
+async function exportAllDataFile() {
+  const data = await db.exportAllData();
+  downloadFile("riff-export.json", JSON.stringify(data, null, 2), "application/json");
+  showToast("Export downloaded");
+}
+
+function clearAllData() {
+  if (!confirm("Delete all riffs on this device? This can't be undone.")) return;
+  db.wipeAllClips().then(async () => {
+    state.clips = await db.getAllClips();
+    renderView();
+    showToast("All riffs cleared");
+  });
+}
+
+function downloadFile(filename, content, mime) {
+  const blob = new Blob([content], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
+}
+
+// ---------------------------------------------------------------------------
+// Utilities
+// ---------------------------------------------------------------------------
+
+function clamp(n, min, max) {
+  return Math.min(max, Math.max(min, n));
+}
+
+function formatDuration(totalSeconds) {
+  const s = Math.max(0, Math.floor(totalSeconds || 0));
+  const m = Math.floor(s / 60);
+  const r = s % 60;
+  return `${m}:${String(r).padStart(2, "0")}`;
+}
+
+function formatRange(start, end) {
+  if (end == null) return formatDuration(start);
+  return `${formatDuration(start)}\u2013${formatDuration(end)}`;
+}
+
+function parseDurationInput(value) {
+  const m = /^(\d+):(\d{1,2})$/.exec(value.trim());
+  if (m) return parseInt(m[1], 10) * 60 + parseInt(m[2], 10);
+  if (/^\d+$/.test(value.trim())) return parseInt(value.trim(), 10);
+  return null;
+}
+
+function timeAgo(iso) {
+  const diff = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  if (days < 7) return `${days}d ago`;
+  const weeks = Math.floor(days / 7);
+  if (weeks < 5) return `${weeks}w ago`;
+  return new Date(iso).toLocaleDateString(undefined, { month: "short", day: "numeric" });
+}
+
+function truncate(str, n) {
+  if (!str) return "";
+  return str.length > n ? str.slice(0, n - 1).trimEnd() + "\u2026" : str;
+}
+
+function slugify(str) {
+  return (str || "riff")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "")
+    .slice(0, 60) || "riff";
+}
+
+function escapeHtml(str) {
+  if (str == null) return "";
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function escapeAttr(str) {
+  return escapeHtml(str);
+}
+
+</script>
+</body>
+</html>
