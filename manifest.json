@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Riff — Clip, quote, comment",
   "short_name": "Riff",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "description": "Clip a passage, video moment, or podcast beat — add your take — keep the source attached, permanently.",
   "minimum_chrome_version": "114",
 

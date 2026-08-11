@@ -17,6 +17,7 @@ const state = {
   searchOpen: false,
   filtersOpen: false,
   selectMode: false,
+  activeCardId: null,
   selectedIds: new Set(),
   editingId: null, // clip id being edited, or null for a new clip
   draft: null, // working copy of the clip being composed
@@ -152,9 +153,9 @@ function renderHeaderTools() {
   if (state.view === "feed" && state.detailId) {
     const clip = state.clips.find((c) => c.id === state.detailId);
     headerTools.innerHTML = `
-      <button class="icon-btn" id="btn-detail-back" title="Back">${icon("arrowLeft", { size: 18 })}</button>
+      <button class="icon-btn" id="btn-detail-back" title="Back" aria-label="Back">${icon("arrowLeft", { size: 18 })}</button>
       <div class="menu-wrap">
-        <button class="icon-btn" id="btn-detail-menu" title="More">${icon("moreVertical", { size: 18 })}</button>
+        <button class="icon-btn" id="btn-detail-menu" title="More" aria-label="More actions">${icon("moreVertical", { size: 18 })}</button>
         ${state.openMenuId === "detail" && clip ? cardMenu(clip.id) : ""}
       </div>
     `;
@@ -164,7 +165,7 @@ function renderHeaderTools() {
   if (state.view === "feed" && state.selectMode) {
     headerTools.innerHTML = `
       <span class="select-count">${state.selectedIds.size} selected</span>
-      <button class="icon-btn" id="btn-exit-select" title="Cancel">${icon("x", { size: 18 })}</button>
+      <button class="icon-btn" id="btn-exit-select" title="Cancel" aria-label="Cancel selection">${icon("x", { size: 18 })}</button>
     `;
     return;
   }
@@ -177,18 +178,18 @@ function renderHeaderTools() {
   const sortLabels = { newest: "Newest", oldest: "Oldest", az: "A\u2013Z" };
   headerTools.innerHTML = `
     <div class="menu-wrap">
-      <button class="icon-btn ${state.openMenuId === "sort" ? "is-active" : ""}" id="btn-toggle-sort" title="Sort: ${sortLabels[state.sort]}">
+      <button class="icon-btn ${state.openMenuId === "sort" ? "is-active" : ""}" id="btn-toggle-sort" title="Sort: ${sortLabels[state.sort]}" aria-label="Sort riffs">
         ${icon("sort", { size: 18 })}
       </button>
       ${state.openMenuId === "sort" ? sortMenu() : ""}
     </div>
-    <button class="icon-btn ${state.selectMode ? "is-active" : ""}" id="btn-toggle-select" title="Select">
+    <button class="icon-btn ${state.selectMode ? "is-active" : ""}" id="btn-toggle-select" title="Select" aria-label="Select multiple riffs">
       ${icon("checkSquare", { size: 18 })}
     </button>
-    <button class="icon-btn ${state.searchOpen ? "is-active" : ""}" id="btn-toggle-search" title="Search">
+    <button class="icon-btn ${state.searchOpen ? "is-active" : ""}" id="btn-toggle-search" title="Search" aria-label="Search riffs">
       ${icon("search", { size: 18 })}
     </button>
-    <button class="icon-btn ${state.filtersOpen ? "is-active" : ""}" id="btn-toggle-filters" title="Filter">
+    <button class="icon-btn ${state.filtersOpen ? "is-active" : ""}" id="btn-toggle-filters" title="Filter" aria-label="Filter riffs">
       ${icon("filter", { size: 18 })}
     </button>
   `;
@@ -253,6 +254,7 @@ function renderChipRow() {
       { id: "video", label: "Video" },
       { id: "audio", label: "Audio" },
     ];
+    if (state.clips.some((c) => c.archived)) chips.push({ id: "archived", label: "Archived" });
     html += chips
       .map(
         (c) =>
@@ -335,8 +337,14 @@ function iconNode(name, size, className) {
 
 function filteredClips() {
   let list = [...state.clips];
-  if (state.filter === "pinned") list = list.filter((c) => c.pinned);
-  else if (state.filter !== "all") list = list.filter((c) => c.kind === state.filter);
+
+  if (state.filter === "archived") {
+    list = list.filter((c) => c.archived);
+  } else {
+    list = list.filter((c) => !c.archived);
+    if (state.filter === "pinned") list = list.filter((c) => c.pinned);
+    else if (state.filter !== "all") list = list.filter((c) => c.kind === state.filter);
+  }
 
   if (state.tagFilter) {
     list = list.filter((c) => (c.tags || []).includes(state.tagFilter));
@@ -375,9 +383,10 @@ function filteredClips() {
 
 function feedView() {
   const list = filteredClips();
+  const welcome = state.settings && !state.settings.hasSeenWelcome ? welcomeBanner() : "";
 
   if (state.clips.length === 0) {
-    return emptyState({
+    return welcome + emptyState({
       icon: "scissors",
       title: "Your archive starts here",
       body: "Highlight a passage, right-click a video, or capture the tab you're on. Every riff keeps its source attached, permanently.",
@@ -387,7 +396,7 @@ function feedView() {
   }
 
   if (list.length === 0) {
-    return emptyState({
+    return welcome + emptyState({
       icon: "search",
       title: "Nothing matches",
       body: "Try a different search term or clear your filters.",
@@ -395,6 +404,7 @@ function feedView() {
   }
 
   return `
+    ${welcome}
     <div class="feed-list">
       ${list.map((c) => clipCard(c)).join("")}
     </div>
@@ -409,8 +419,22 @@ function bulkBar() {
       <button class="btn btn-outline btn-sm" id="btn-select-all">${icon("checkSquare", { size: 13 })}<span>${n === filteredClips().length && n > 0 ? "Clear all" : "Select all"}</span></button>
       <div class="bulk-bar-spacer"></div>
       <button class="btn btn-outline btn-sm" id="btn-bulk-tag" ${n === 0 ? "disabled" : ""}>${icon("hash", { size: 13 })}<span>Tag</span></button>
+      <button class="btn btn-outline btn-sm" id="btn-bulk-archive" ${n === 0 ? "disabled" : ""}>${icon("archive", { size: 13 })}<span>Archive</span></button>
       <button class="btn btn-outline btn-sm" id="btn-bulk-copy" ${n === 0 ? "disabled" : ""}>${icon("copy", { size: 13 })}<span>Copy</span></button>
       <button class="btn btn-outline btn-sm btn-danger-outline" id="btn-bulk-delete" ${n === 0 ? "disabled" : ""}>${icon("trash", { size: 13 })}<span>Delete</span></button>
+    </div>
+  `;
+}
+
+function welcomeBanner() {
+  return `
+    <div class="welcome-banner">
+      <div class="welcome-banner-mark">R</div>
+      <div class="welcome-banner-text">
+        <strong>Welcome to Riff</strong>
+        <p>Highlight text or right-click a video anywhere on the web, then hit <kbd>Ctrl/Cmd+Shift+K</kbd> to riff it. Everything you save stays on this device.</p>
+      </div>
+      <button class="welcome-banner-dismiss" data-action="dismiss-welcome" aria-label="Dismiss welcome message">${icon("x", { size: 15 })}</button>
     </div>
   `;
 }
@@ -449,7 +473,7 @@ function clipCard(c) {
   if (c.comment?.kind === "voice" && c.comment.audioDataUrl) {
     commentHtml = `
       <div class="comment-row comment-voice" data-audio-src="${escapeAttr(c.comment.audioDataUrl)}">
-        <button class="mini-play" data-action="play-audio" data-id="${c.id}">${icon("play", { size: 13 })}</button>
+        <button class="mini-play" data-action="play-audio" data-id="${c.id}" aria-label="Play voice note">${icon("play", { size: 13 })}</button>
         <div class="voice-wave" aria-hidden="true">${voiceBars()}</div>
         <span class="voice-duration">${formatDuration(c.comment.audioDurationSeconds || 0)}</span>
       </div>
@@ -471,7 +495,7 @@ function clipCard(c) {
   const bodyAction = state.selectMode ? "toggle-select" : "open-detail";
 
   return `
-    <article class="clip-card ${state.selectMode ? "is-selectable" : ""} ${selected ? "is-selected" : ""}" data-id="${c.id}">
+    <article class="clip-card ${state.selectMode ? "is-selectable" : ""} ${selected ? "is-selected" : ""} ${state.activeCardId === c.id ? "is-keyboard-active" : ""}" data-id="${c.id}">
       <div class="clip-card-inner">
         <header class="clip-card-header">
           <button class="clip-source" data-action="${bodyAction}" data-id="${c.id}">
@@ -485,12 +509,13 @@ function clipCard(c) {
             <span class="clip-site">${escapeHtml(c.source?.siteName || "Unknown source")}</span>
             <span class="kind-dot" style="background:${meta.color}" title="${meta.label}"></span>
             <span class="clip-time">${timeLabel}</span>
+            ${c.archived ? `<span class="archived-badge">${icon("archive", { size: 10 })}Archived</span>` : ""}
           </button>
           ${
             state.selectMode
               ? ""
               : `<div class="menu-wrap">
-            <button class="icon-btn-sm" data-action="toggle-menu" data-id="${c.id}" title="More">${icon("moreVertical", { size: 15 })}</button>
+            <button class="icon-btn-sm" data-action="toggle-menu" data-id="${c.id}" title="More" aria-label="More actions">${icon("moreVertical", { size: 15 })}</button>
             ${state.openMenuId === c.id ? cardMenu(c.id) : ""}
           </div>`
           }
@@ -520,12 +545,15 @@ function clipCard(c) {
 }
 
 function cardMenu(id) {
+  const clip = state.clips.find((c) => c.id === id);
+  const archived = clip?.archived;
   return `
     <div class="dropdown-menu" data-menu-for="${id}">
       <button class="dropdown-item" data-action="edit" data-id="${id}">${icon("edit", { size: 14 })}<span>Edit</span></button>
       <button class="dropdown-item" data-action="export" data-id="${id}">${icon("share", { size: 14 })}<span>Export landing page</span></button>
       <button class="dropdown-item" data-action="copy" data-id="${id}">${icon("copy", { size: 14 })}<span>Copy as text</span></button>
       <div class="dropdown-divider"></div>
+      <button class="dropdown-item" data-action="${archived ? "unarchive" : "archive"}" data-id="${id}">${icon("archive", { size: 14 })}<span>${archived ? "Unarchive" : "Archive"}</span></button>
       <button class="dropdown-item dropdown-item-danger" data-action="delete" data-id="${id}">${icon("trash", { size: 14 })}<span>Delete</span></button>
     </div>
   `;
@@ -554,7 +582,7 @@ function detailView(c) {
   if (c.comment?.kind === "voice" && c.comment.audioDataUrl) {
     commentHtml = `
       <div class="comment-row comment-voice">
-        <button class="mini-play" data-action="play-audio" data-id="${c.id}">${icon("play", { size: 14 })}</button>
+        <button class="mini-play" data-action="play-audio" data-id="${c.id}" aria-label="Play voice note">${icon("play", { size: 14 })}</button>
         <div class="voice-wave" aria-hidden="true">${voiceBars()}</div>
         <span class="voice-duration">${formatDuration(c.comment.audioDurationSeconds || 0)}</span>
       </div>
@@ -584,6 +612,7 @@ function detailView(c) {
       ${mediaHtml}
       ${commentHtml ? `<h3 class="detail-label">Your take</h3>${commentHtml}` : ""}
       ${tagsHtml}
+      ${relatedClipsHtml(c)}
 
       <div class="detail-meta">
         <span>${icon("clock", { size: 13 })} ${escapeHtml(timeAgo(c.createdAt))}</span>
@@ -591,6 +620,44 @@ function detailView(c) {
       </div>
     </div>
   `;
+}
+
+function relatedClipsHtml(c) {
+  const related = state.clips.filter((other) => other.id !== c.id && !other.archived && sameSource(c, other)).slice(0, 4);
+  if (related.length === 0) return "";
+  return `
+    <h3 class="detail-label">More from ${escapeHtml(c.source?.siteName || "this source")}</h3>
+    <div class="related-list">
+      ${related
+        .map((r) => {
+          const rMeta = KIND_META[r.kind] || KIND_META.text;
+          const label = r.kind === "text" ? truncate(r.quote, 70) : truncate(r.mediaTitle || r.source?.title || "Untitled", 70);
+          return `
+          <button class="related-row" data-action="open-detail" data-id="${r.id}">
+            <span class="kind-dot" style="background:${rMeta.color}"></span>
+            <span class="related-row-text">${escapeHtml(label)}</span>
+            <span class="related-row-time">${escapeHtml(timeAgo(r.createdAt))}</span>
+          </button>`;
+        })
+        .join("")}
+    </div>
+  `;
+}
+
+function sameSource(a, b) {
+  if (a.source?.url && b.source?.url && a.source.url === b.source.url) return true;
+  const ah = hostnameOf(a.source?.url);
+  const bh = hostnameOf(b.source?.url);
+  if (ah && bh && ah === bh) return true;
+  return !!(a.source?.siteName && b.source?.siteName && a.source.siteName.toLowerCase() === b.source.siteName.toLowerCase());
+}
+
+function hostnameOf(url) {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch {
+    return null;
+  }
 }
 
 function voiceBars() {
@@ -683,6 +750,8 @@ function composeView() {
       `
       }
 
+      ${duplicateSourceNotice(d)}
+
       <div class="segmented" id="kind-segmented">
         ${["text", "video", "audio"]
           .map(
@@ -706,13 +775,26 @@ function composeView() {
 
       <div class="field-group">
         <label>Tags</label>
-        <input type="text" id="input-tags" placeholder="comma, separated, tags" value="${escapeAttr((d.tags || []).join(", "))}" />
+        <input type="text" id="input-tags" placeholder="comma, separated, tags" value="${escapeAttr((d.tags || []).join(", "))}" autocomplete="off" />
+        <div id="tag-suggestions" class="tag-suggestions"></div>
       </div>
 
       <div class="composer-actions">
         ${isEdit ? `<button class="btn btn-ghost" id="btn-cancel-edit">Cancel</button>` : ""}
         <button class="btn btn-primary" id="btn-save-clip">${icon("check", { size: 15 })}<span>${isEdit ? "Save changes" : "Save riff"}</span></button>
       </div>
+    </div>
+  `;
+}
+
+function duplicateSourceNotice(d) {
+  if (!d.source?.url) return "";
+  const matches = state.clips.filter((c) => c.id !== state.editingId && c.source?.url === d.source.url);
+  if (matches.length === 0) return "";
+  return `
+    <div class="dup-notice">
+      ${icon("alert", { size: 14 })}
+      <span>You've already riffed this source ${matches.length} time${matches.length === 1 ? "" : "s"}.</span>
     </div>
   `;
 }
@@ -771,7 +853,7 @@ function commentVoiceField(d) {
   if (d.comment.audioDataUrl) {
     return `
       <div class="voice-recorder has-audio">
-        <button class="mini-play" id="btn-preview-audio">${icon("play", { size: 14 })}</button>
+        <button class="mini-play" id="btn-preview-audio" aria-label="Preview recording">${icon("play", { size: 14 })}</button>
         <div class="voice-wave" aria-hidden="true">${voiceBars()}</div>
         <span class="voice-duration">${formatDuration(d.comment.audioDurationSeconds || 0)}</span>
         <button class="footer-btn footer-btn-danger" id="btn-discard-audio" title="Re-record">${icon("trash", { size: 13 })}</button>
@@ -812,7 +894,7 @@ function settingsView() {
           ${Object.entries(ACCENTS)
             .map(
               ([key, val]) =>
-                `<button class="swatch ${s.accentColor === key ? "is-active" : ""}" data-accent="${key}" style="background:${val.light}" title="${key[0].toUpperCase() + key.slice(1)}">${s.accentColor === key ? icon("check", { size: 12 }) : ""}</button>`
+                `<button class="swatch ${s.accentColor === key ? "is-active" : ""}" data-accent="${key}" style="background:${val.light}" title="${key[0].toUpperCase() + key.slice(1)}" aria-label="${key[0].toUpperCase() + key.slice(1)} accent color${s.accentColor === key ? ", selected" : ""}">${s.accentColor === key ? icon("check", { size: 12 }) : ""}</button>`
             )
             .join("")}
         </div>
@@ -871,8 +953,8 @@ function settingsView() {
             <div class="tag-manage-row">
               <button class="tag-chip" data-action="filter-tag-settings" data-tag="${escapeAttr(t.tag)}">${icon("hash", { size: 10 })}${escapeHtml(t.tag)}</button>
               <span class="tag-count">${t.count}</span>
-              <button class="icon-btn-sm" data-action="rename-tag" data-tag="${escapeAttr(t.tag)}" title="Rename">${icon("edit", { size: 13 })}</button>
-              <button class="icon-btn-sm" data-action="delete-tag" data-tag="${escapeAttr(t.tag)}" title="Delete">${icon("trash", { size: 13 })}</button>
+              <button class="icon-btn-sm" data-action="rename-tag" data-tag="${escapeAttr(t.tag)}" title="Rename" aria-label="Rename tag">${icon("edit", { size: 13 })}</button>
+              <button class="icon-btn-sm" data-action="delete-tag" data-tag="${escapeAttr(t.tag)}" title="Delete" aria-label="Delete tag">${icon("trash", { size: 13 })}</button>
             </div>`
             )
             .join("")}
@@ -908,7 +990,7 @@ function settingsView() {
 
       <section class="settings-section settings-about">
         <div class="about-mark">R</div>
-        <p>Riff &mdash; version 1.1.0</p>
+        <p>Riff &mdash; version 1.2.0</p>
         <p class="settings-muted">Clip, quote, comment. Attribution welded in, not bolted on.</p>
       </section>
     </div>
@@ -943,6 +1025,12 @@ document.addEventListener("click", onGlobalClick);
 document.addEventListener("input", onGlobalInput);
 document.addEventListener("change", onGlobalChange);
 document.addEventListener("keydown", onGlobalKeydown);
+document.addEventListener("focusout", (e) => {
+  if (e.target.id !== "input-tags") return;
+  setTimeout(() => {
+    if (!document.activeElement?.closest?.(".tag-suggestions")) renderTagSuggestions("");
+  }, 120);
+});
 
 function onGlobalKeydown(e) {
   const typing = ["INPUT", "TEXTAREA"].includes(document.activeElement?.tagName);
@@ -975,6 +1063,29 @@ function onGlobalKeydown(e) {
   if (e.key.toLowerCase() === "n") {
     e.preventDefault();
     goToTab("compose");
+    return;
+  }
+
+  if (state.view === "feed" && !state.detailId && !state.selectMode && !state.openMenuId) {
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+      e.preventDefault();
+      const list = filteredClips();
+      if (list.length === 0) return;
+      const curIdx = list.findIndex((c) => c.id === state.activeCardId);
+      let nextIdx;
+      if (curIdx === -1) nextIdx = 0;
+      else nextIdx = e.key === "ArrowDown" ? Math.min(list.length - 1, curIdx + 1) : Math.max(0, curIdx - 1);
+      state.activeCardId = list[nextIdx].id;
+      renderView();
+      document.querySelector(`.clip-card[data-id="${state.activeCardId}"]`)?.scrollIntoView({ block: "nearest" });
+      return;
+    }
+    if (e.key === "Enter" && state.activeCardId) {
+      e.preventDefault();
+      state.detailId = state.activeCardId;
+      render();
+      return;
+    }
   }
 }
 
@@ -1013,6 +1124,14 @@ function onGlobalClick(e) {
     state.openMenuId = null;
     renderView();
     renderHeaderTools();
+  }
+
+  if (e.target.closest('[data-action="dismiss-welcome"]')) {
+    db.saveSettings({ hasSeenWelcome: true }).then((s) => {
+      state.settings = s;
+      renderView();
+    });
+    return;
   }
 
   const tagFilterBtn = e.target.closest('[data-action="filter-tag"]');
@@ -1059,6 +1178,10 @@ function onGlobalClick(e) {
   }
   if (e.target.closest("#btn-bulk-tag")) {
     bulkAddTag();
+    return;
+  }
+  if (e.target.closest("#btn-bulk-archive")) {
+    bulkArchive();
     return;
   }
 
@@ -1177,6 +1300,22 @@ function onGlobalClick(e) {
     return;
   }
 
+  const tagSuggestion = e.target.closest('[data-action="apply-tag-suggestion"]');
+  if (tagSuggestion) {
+    const input = document.getElementById("input-tags");
+    if (input) {
+      const segments = input.value.split(",");
+      segments[segments.length - 1] = " " + tagSuggestion.dataset.tag;
+      const nextValue = segments.map((s) => s.trim()).filter(Boolean).join(", ") + ", ";
+      input.value = nextValue;
+      state.draft.tags = commitTagsFromValue(nextValue);
+      renderTagSuggestions("");
+      input.focus();
+      scheduleDraftAutosave();
+    }
+    return;
+  }
+
   const accentSwatch = e.target.closest("[data-accent]");
   if (accentSwatch) {
     setAccent(accentSwatch.dataset.accent);
@@ -1229,6 +1368,12 @@ function onGlobalInput(e) {
   if (!state.draft) return;
   const d = state.draft;
   const id = e.target.id;
+  if (id === "input-tags") {
+    d.tags = commitTagsFromValue(e.target.value);
+    renderTagSuggestions(e.target.value);
+    scheduleDraftAutosave();
+    return;
+  }
   if (id === "input-source-url") d.source.url = e.target.value;
   else if (id === "input-source-title") d.source.title = e.target.value;
   else if (id === "input-quote") d.quote = e.target.value;
@@ -1251,16 +1396,42 @@ function onGlobalInput(e) {
   scheduleDraftAutosave();
 }
 
-function onGlobalChange(e) {
-  if (e.target.id === "input-tags" && state.draft) {
-    state.draft.tags = e.target.value
-      .split(",")
-      .map((t) => t.trim())
-      .filter(Boolean)
-      .slice(0, 8);
-    scheduleDraftAutosave();
+function commitTagsFromValue(value) {
+  return value
+    .split(",")
+    .map((t) => t.trim())
+    .filter(Boolean)
+    .slice(0, 8);
+}
+
+function renderTagSuggestions(value) {
+  const host = document.getElementById("tag-suggestions");
+  if (!host) return;
+  const segments = value.split(",");
+  const query = (segments[segments.length - 1] || "").trim().toLowerCase();
+  const already = new Set(commitTagsFromValue(segments.slice(0, -1).join(",")));
+
+  if (!query) {
+    host.innerHTML = "";
     return;
   }
+  const matches = db
+    .allTagsWithCounts(state.clips)
+    .filter((t) => t.tag.toLowerCase().includes(query) && t.tag.toLowerCase() !== query && !already.has(t.tag))
+    .slice(0, 5);
+  if (matches.length === 0) {
+    host.innerHTML = "";
+    return;
+  }
+  host.innerHTML = matches
+    .map(
+      (t) =>
+        `<button type="button" class="tag-suggestion" data-action="apply-tag-suggestion" data-tag="${escapeAttr(t.tag)}">${icon("hash", { size: 10 })}${escapeHtml(t.tag)}<span>${t.count}</span></button>`
+    )
+    .join("");
+}
+
+function onGlobalChange(e) {
   if (e.target.id === "input-default-length") {
     const len = clamp(parseInt(e.target.value || "30", 10), 5, 90);
     db.saveSettings({ defaultClipLength: len }).then((s) => {
@@ -1552,6 +1723,23 @@ async function handleCardAction(action, id, el) {
     return;
   }
 
+  if (action === "archive" || action === "unarchive") {
+    const updated = await db.toggleArchive(id);
+    state.clips = await db.getAllClips();
+    if (updated?.archived && state.detailId === id) state.detailId = null;
+    render();
+    showToast(action === "archive" ? "Riff archived" : "Riff unarchived", {
+      actionLabel: "Undo",
+      duration: 4000,
+      onAction: async () => {
+        await db.toggleArchive(id);
+        state.clips = await db.getAllClips();
+        render();
+      },
+    });
+    return;
+  }
+
   if (action === "copy") {
     const text = clipToPlainText(clip);
     await navigator.clipboard.writeText(text);
@@ -1640,6 +1828,35 @@ async function bulkAddTag() {
   state.clips = clips;
   render();
   showToast(`Tagged ${ids.length} riff${ids.length === 1 ? "" : "s"}`);
+}
+
+async function bulkArchive() {
+  const ids = [...state.selectedIds];
+  if (ids.length === 0) return;
+  const clips = await db.getAllClips();
+  clips.forEach((c) => {
+    if (!ids.includes(c.id)) return;
+    c.archived = true;
+    c.pinned = false;
+  });
+  await db.saveAllClips(clips);
+  state.clips = clips;
+  state.selectMode = false;
+  state.selectedIds = new Set();
+  render();
+  showToast(`Archived ${ids.length} riff${ids.length === 1 ? "" : "s"}`, {
+    actionLabel: "Undo",
+    duration: 4000,
+    onAction: async () => {
+      let current = await db.getAllClips();
+      current.forEach((c) => {
+        if (ids.includes(c.id)) c.archived = false;
+      });
+      await db.saveAllClips(current);
+      state.clips = current;
+      render();
+    },
+  });
 }
 
 function clipToPlainText(c) {

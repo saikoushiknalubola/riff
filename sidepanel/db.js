@@ -36,6 +36,7 @@ async function createClip(partial) {
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     pinned: false,
+    archived: false,
     tags: [],
     kind: "text", // text | video | audio
     source: { url: "", title: "", siteName: "", favicon: "", author: null },
@@ -81,6 +82,17 @@ async function togglePin(id) {
   const clip = clips.find((c) => c.id === id);
   if (!clip) return null;
   clip.pinned = !clip.pinned;
+  clip.updatedAt = new Date().toISOString();
+  await saveAllClips(clips);
+  return clip;
+}
+
+async function toggleArchive(id) {
+  const clips = await getAllClips();
+  const clip = clips.find((c) => c.id === id);
+  if (!clip) return null;
+  clip.archived = !clip.archived;
+  if (clip.archived) clip.pinned = false;
   clip.updatedAt = new Date().toISOString();
   await saveAllClips(clips);
   return clip;
@@ -192,6 +204,7 @@ export {
   deleteClip,
   restoreClip,
   togglePin,
+  toggleArchive,
   getSettings,
   saveSettings,
   getPendingCapture,
