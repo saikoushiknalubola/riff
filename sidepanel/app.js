@@ -534,7 +534,7 @@ function clipCard(c) {
           <button class="footer-btn ${c.pinned ? "is-active" : ""}" data-action="pin" data-id="${c.id}" title="${c.pinned ? "Unpin" : "Pin"}">
             ${icon("pin", { size: 14 })}${c.pinned ? "<span>Pinned</span>" : ""}
           </button>
-          <a class="footer-link" href="${escapeAttr(c.source?.url || "#")}" target="_blank" rel="noopener noreferrer" title="Open source">
+          <a class="footer-link" href="${escapeAttr(safeUrl(c.source?.url))}" target="_blank" rel="noopener noreferrer" title="Open source">
             ${icon("externalLink", { size: 14 })}<span>Source</span>
           </a>
         </footer>`
@@ -567,7 +567,7 @@ function detailView(c) {
     mediaHtml = `<blockquote class="detail-quote">${escapeHtml(c.quote)}</blockquote>`;
   } else {
     mediaHtml = `
-      <a class="detail-media" href="${escapeAttr(c.source?.url)}" target="_blank" rel="noopener noreferrer">
+      <a class="detail-media" href="${escapeAttr(safeUrl(c.source?.url))}" target="_blank" rel="noopener noreferrer">
         <span class="detail-media-icon">${icon(c.kind === "video" ? "video" : "headphones", { size: 18 })}</span>
         <span class="detail-media-text">
           <strong>${escapeHtml(c.mediaTitle || "Untitled")}</strong>
@@ -616,7 +616,7 @@ function detailView(c) {
 
       <div class="detail-meta">
         <span>${icon("clock", { size: 13 })} ${escapeHtml(timeAgo(c.createdAt))}</span>
-        <a href="${escapeAttr(c.source?.url || "#")}" target="_blank" rel="noopener noreferrer">${icon("externalLink", { size: 13 })} Open source</a>
+        <a href="${escapeAttr(safeUrl(c.source?.url))}" target="_blank" rel="noopener noreferrer">${icon("externalLink", { size: 13 })} Open source</a>
       </div>
     </div>
   `;
@@ -1967,4 +1967,15 @@ function escapeHtml(str) {
 
 function escapeAttr(str) {
   return escapeHtml(str);
+}
+
+function safeUrl(url) {
+  if (!url) return "#";
+  try {
+    const parsed = new URL(url, location.href);
+    if (parsed.protocol === "http:" || parsed.protocol === "https:") return url;
+  } catch {
+    return "#";
+  }
+  return "#";
 }

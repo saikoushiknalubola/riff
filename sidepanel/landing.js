@@ -16,6 +16,17 @@ function esc(str) {
     .replace(/"/g, "&quot;");
 }
 
+function safeUrlForExport(url) {
+  if (!url) return "#";
+  try {
+    const parsed = new URL(url, "https://example.invalid/");
+    if (parsed.protocol === "http:" || parsed.protocol === "https:") return url;
+  } catch {
+    return "#";
+  }
+  return "#";
+}
+
 function fmt(totalSeconds) {
   const s = Math.max(0, Math.floor(totalSeconds || 0));
   const m = Math.floor(s / 60);
@@ -55,7 +66,7 @@ function buildLandingPageHTML(clip) {
     `;
   } else {
     mediaBlock = `
-      <a class="media-link" href="${esc(clip.source.url)}" target="_blank" rel="noopener noreferrer">
+      <a class="media-link" href="${esc(safeUrlForExport(clip.source.url))}" target="_blank" rel="noopener noreferrer">
         <span class="media-link-icon">&#9654;</span>
         <span>
           <strong>${esc(clip.mediaTitle || "Listen to the clipped moment")}</strong>
@@ -67,7 +78,7 @@ function buildLandingPageHTML(clip) {
 
   const commentBlock =
     clip.comment?.kind === "voice" && clip.comment.audioDataUrl
-      ? `<div class="comment"><audio controls src="${clip.comment.audioDataUrl}"></audio></div>`
+      ? `<div class="comment"><audio controls src="${esc(clip.comment.audioDataUrl)}"></audio></div>`
       : clip.comment?.text
         ? `<p class="comment-text">${esc(clip.comment.text)}</p>`
         : "";
@@ -139,7 +150,7 @@ function buildLandingPageHTML(clip) {
         ${clip.source?.favicon ? `<img src="${esc(clip.source.favicon)}" alt="" />` : ""}
         <span>${esc(clip.source?.siteName || "")}</span>
         <span>&middot;</span>
-        <a href="${esc(clip.source?.url)}" target="_blank" rel="noopener noreferrer">View original</a>
+        <a href="${esc(safeUrlForExport(clip.source?.url))}" target="_blank" rel="noopener noreferrer">View original</a>
       </div>
 
       ${mediaBlock}
@@ -148,7 +159,7 @@ function buildLandingPageHTML(clip) {
       ${tags ? `<div class="tags">${tags}</div>` : ""}
 
       <div class="cta-row">
-        <a class="btn btn-primary" href="${esc(clip.source?.url)}" target="_blank" rel="noopener noreferrer">Open the source</a>
+        <a class="btn btn-primary" href="${esc(safeUrlForExport(clip.source?.url))}" target="_blank" rel="noopener noreferrer">Open the source</a>
         <a class="btn btn-ghost" href="mailto:?subject=${encodeURIComponent("Takedown request: " + (clip.mediaTitle || clip.quote || "a riff"))}">File a claim</a>
       </div>
     </div>

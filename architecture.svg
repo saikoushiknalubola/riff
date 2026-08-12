@@ -1,0 +1,80 @@
+<svg width="900" height="620" viewBox="0 0 900 620" xmlns="http://www.w3.org/2000/svg" role="img" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif">
+  <title>Riff architecture</title>
+  <desc>A web page feeds a capture through the background service worker into the side panel UI, which reads and writes chrome.storage.local and can export a self-contained HTML landing page.</desc>
+
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M1 1L8 5L1 9" fill="none" stroke="#8a8f9c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <marker id="arrow-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M1 1L8 5L1 9" fill="none" stroke="#2342f5" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <marker id="arrow-orange" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M1 1L8 5L1 9" fill="none" stroke="#d97e1f" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="900" height="620" fill="#fbfbfa"/>
+
+  <!-- ============ Row 1: trigger + web page ============ -->
+  <rect x="40" y="36" width="230" height="64" rx="12" fill="#ffffff" stroke="#e2e1da" stroke-width="1"/>
+  <text x="155" y="60" text-anchor="middle" font-size="14" font-weight="600" fill="#12141c">The page you're on</text>
+  <text x="155" y="80" text-anchor="middle" font-size="11.5" fill="#6b6f76">selection, video/audio, og: tags</text>
+
+  <rect x="630" y="36" width="230" height="64" rx="12" fill="#ffffff" stroke="#e2e1da" stroke-width="1"/>
+  <text x="745" y="60" text-anchor="middle" font-size="14" font-weight="600" fill="#12141c">Trigger</text>
+  <text x="745" y="80" text-anchor="middle" font-size="11.5" fill="#6b6f76">right-click menu, keyboard shortcut</text>
+
+  <!-- Arrows into background.js -->
+  <path d="M 220 100 L 350 150" fill="none" stroke="#8a8f9c" stroke-width="1.4" marker-end="url(#arrow)"/>
+  <path d="M 700 100 L 560 150" fill="none" stroke="#8a8f9c" stroke-width="1.4" marker-end="url(#arrow)"/>
+  <text x="500" y="122" text-anchor="middle" font-size="11.5" fill="#6b6f76">chrome.scripting.executeScript</text>
+
+  <!-- ============ Row 2: background.js ============ -->
+  <rect x="330" y="152" width="240" height="72" rx="12" fill="#eef1ff" stroke="#2342f5" stroke-width="1.4"/>
+  <text x="450" y="180" text-anchor="middle" font-size="15" font-weight="700" fill="#0c1a7a">background.js</text>
+  <text x="450" y="199" text-anchor="middle" font-size="11.5" fill="#3149c4">service worker &#8226; on-demand injection only</text>
+
+  <path d="M 450 224 L 450 264" fill="none" stroke="#2342f5" stroke-width="1.6" marker-end="url(#arrow-blue)"/>
+  <text x="466" y="248" font-size="11.5" fill="#6b6f76">pending capture</text>
+
+  <!-- ============ Row 3: side panel container ============ -->
+  <rect x="130" y="266" width="640" height="220" rx="16" fill="#ffffff" stroke="#d8d7d0" stroke-width="1.2"/>
+  <text x="152" y="294" font-size="14" font-weight="700" fill="#12141c">Side panel</text>
+  <text x="152" y="311" font-size="11.5" fill="#6b6f76">everything the person sees and interacts with</text>
+
+  <!-- inner boxes: 2x2 grid -->
+  <rect x="152" y="328" width="280" height="66" rx="10" fill="#f7f7f4" stroke="#e2e1da" stroke-width="1"/>
+  <text x="292" y="354" text-anchor="middle" font-size="13.5" font-weight="600" fill="#12141c">app.js</text>
+  <text x="292" y="372" text-anchor="middle" font-size="11" fill="#6b6f76">view state, rendering, events</text>
+
+  <rect x="448" y="328" width="216" height="66" rx="10" fill="#f7f7f4" stroke="#e2e1da" stroke-width="1"/>
+  <text x="556" y="354" text-anchor="middle" font-size="13.5" font-weight="600" fill="#12141c">db.js</text>
+  <text x="556" y="372" text-anchor="middle" font-size="11" fill="#6b6f76">chrome.storage.local layer</text>
+
+  <rect x="152" y="410" width="280" height="60" rx="10" fill="#f7f7f4" stroke="#e2e1da" stroke-width="1"/>
+  <text x="292" y="435" text-anchor="middle" font-size="13.5" font-weight="600" fill="#12141c">icons.js</text>
+  <text x="292" y="453" text-anchor="middle" font-size="11" fill="#6b6f76">local hand-authored icon set</text>
+
+  <rect x="448" y="410" width="216" height="60" rx="10" fill="#f7f7f4" stroke="#e2e1da" stroke-width="1"/>
+  <text x="556" y="435" text-anchor="middle" font-size="13.5" font-weight="600" fill="#12141c">landing.js</text>
+  <text x="556" y="453" text-anchor="middle" font-size="11" fill="#6b6f76">exportable landing-page HTML</text>
+
+  <!-- ============ Row 4: storage + export outputs ============ -->
+  <path d="M 292 486 L 292 526" fill="none" stroke="#2342f5" stroke-width="1.6" marker-end="url(#arrow-blue)"/>
+  <path d="M 556 486 L 556 526" fill="none" stroke="#d97e1f" stroke-width="1.6" marker-end="url(#arrow-orange)"/>
+
+  <rect x="130" y="528" width="280" height="70" rx="12" fill="#eef1ff" stroke="#2342f5" stroke-width="1.2"/>
+  <text x="270" y="556" text-anchor="middle" font-size="14" font-weight="700" fill="#0c1a7a">chrome.storage.local</text>
+  <text x="270" y="575" text-anchor="middle" font-size="11.5" fill="#3149c4">clips, settings, voice notes &#8212; on-device only</text>
+
+  <rect x="490" y="528" width="280" height="70" rx="12" fill="#fdf2e6" stroke="#d97e1f" stroke-width="1.2"/>
+  <text x="630" y="556" text-anchor="middle" font-size="14" font-weight="700" fill="#7a4508">Exported HTML page</text>
+  <text x="630" y="575" text-anchor="middle" font-size="11.5" fill="#a1620f">self-contained &#8226; downloaded, not hosted</text>
+
+  <!-- legend -->
+  <circle cx="152" cy="612" r="4" fill="#2342f5"/>
+  <text x="163" y="616" font-size="11" fill="#6b6f76">stays on-device</text>
+  <circle cx="290" cy="612" r="4" fill="#d97e1f"/>
+  <text x="301" y="616" font-size="11" fill="#6b6f76">leaves the panel, never a server</text>
+</svg>
