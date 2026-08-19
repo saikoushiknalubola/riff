@@ -6,7 +6,7 @@
   Search this repo for "YOUR-USERNAME" to find both.
 -->
 
-<img src="assets/logo.png" width="96" height="96" alt="Riff logo" />
+<img src="icon-512.png" width="96" height="96" alt="Riff logo" />
 
 # riff
 
