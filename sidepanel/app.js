@@ -990,7 +990,7 @@ function settingsView() {
 
       <section class="settings-section settings-about">
         <div class="about-mark">R</div>
-        <p>Riff &mdash; version 1.2.0</p>
+        <p>Riff &mdash; version 1.3.1</p>
         <p class="settings-muted">Clip, quote, comment. Attribution welded in, not bolted on.</p>
       </section>
     </div>
@@ -1043,8 +1043,7 @@ function onGlobalKeydown(e) {
       return;
     }
     if (state.detailId) {
-      state.detailId = null;
-      render();
+      closeDetail();
       return;
     }
     if (typing) document.activeElement.blur();
@@ -1082,8 +1081,7 @@ function onGlobalKeydown(e) {
     }
     if (e.key === "Enter" && state.activeCardId) {
       e.preventDefault();
-      state.detailId = state.activeCardId;
-      render();
+      openDetail(state.activeCardId);
       return;
     }
   }
@@ -1115,9 +1113,7 @@ function onGlobalClick(e) {
     return;
   }
   if (e.target.closest("#btn-detail-back")) {
-    state.detailId = null;
-    state.openMenuId = null;
-    render();
+    closeDetail();
     return;
   }
   if (state.openMenuId && !e.target.closest(".menu-wrap")) {
@@ -1203,9 +1199,8 @@ function onGlobalClick(e) {
 
   const detailTrigger = e.target.closest('[data-action="open-detail"]');
   if (detailTrigger) {
-    state.detailId = detailTrigger.dataset.id;
     state.openMenuId = null;
-    render();
+    openDetail(detailTrigger.dataset.id);
     return;
   }
 
@@ -1473,6 +1468,22 @@ async function maybeRestoreDraft() {
   showToast("Restored your last unsaved draft");
 }
 
+function openDetail(id) {
+  state.detailId = id;
+  render();
+  document.getElementById("btn-detail-back")?.focus();
+}
+
+function closeDetail() {
+  const returningTo = state.detailId;
+  state.detailId = null;
+  state.openMenuId = null;
+  state.activeCardId = returningTo;
+  render();
+  const card = document.querySelector(`.clip-card[data-id="${returningTo}"] .clip-source`);
+  if (card) card.focus();
+}
+
 function goToTab(tab) {
   state.detailId = null;
   state.openMenuId = null;
@@ -1581,6 +1592,13 @@ async function saveDraft() {
     showToast("Add a source URL");
     return;
   }
+
+  const normalizedUrl = normalizeUrl(d.source.url.trim());
+  if (!normalizedUrl) {
+    showToast("That source URL doesn't look right");
+    return;
+  }
+  d.source.url = normalizedUrl;
 
   const payload = {
     kind: d.kind,
@@ -1978,4 +1996,20 @@ function safeUrl(url) {
     return "#";
   }
   return "#";
+}
+
+function normalizeUrl(raw) {
+  if (!raw) return null;
+  let candidate = raw;
+  if (!/^[a-z][a-z0-9+.-]*:\/\//i.test(candidate)) {
+    candidate = "https://" + candidate;
+  }
+  try {
+    const parsed = new URL(candidate);
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") return null;
+    if (!parsed.hostname.includes(".") && parsed.hostname !== "localhost") return null;
+    return candidate;
+  } catch {
+    return null;
+  }
 }

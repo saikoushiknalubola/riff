@@ -1,5 +1,11 @@
 <div align="center">
 
+<!--
+  Before publishing: this file has two placeholder URLs to update —
+  the Validate badge below, and GITHUB_URL near the bottom of site/index.html.
+  Search this repo for "YOUR-USERNAME" to find both.
+-->
+
 <img src="assets/logo.png" width="96" height="96" alt="Riff logo" />
 
 # riff
@@ -9,19 +15,46 @@
 A Chrome side-panel extension for commenting on other people's work without stealing it.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
+[![Version](https://img.shields.io/badge/version-1.3.1-2342f5.svg)](./CHANGELOG.md)
 [![Manifest V3](https://img.shields.io/badge/Manifest-V3-2342f5.svg)](./manifest.json)
 [![No dependencies](https://img.shields.io/badge/dependencies-zero-1f9d63.svg)](#architecture)
+[![Validate](https://github.com/YOUR-USERNAME/riff/actions/workflows/validate.yml/badge.svg)](./.github/workflows/validate.yml)
 [![PRs welcome](https://img.shields.io/badge/PRs-welcome-d97e1f.svg)](./CONTRIBUTING.md)
 
-[Install](#install) · [Features](#features) · [Architecture](#architecture) · [Privacy](#privacy--permissions) · [Contributing](#contributing) · [Roadmap](#roadmap)
+[Install](#install) · [Features](#features) · [Architecture](#architecture) · [Privacy](#privacy--permissions) · [Contributing](#contributing) · [Roadmap](#roadmap) · [Landing page](./site/index.html)
 
 </div>
 
 ---
 
+## Contents
+
+- [Why](#why)
+- [Screenshots](#screenshots)
+- [Features](#features)
+- [Install](#install)
+- [Using it](#using-it)
+- [How it compares](#how-it-compares)
+- [Architecture](#architecture)
+- [Data model](#data-model)
+- [Privacy & permissions](#privacy--permissions)
+- [Browser support](#browser-support)
+- [FAQ](#faq)
+- [Contributing](#contributing)
+- [Publishing checklist](#publishing-checklist)
+- [Changelog](#changelog)
+- [Roadmap](#roadmap)
+- [License](#license)
+
 ## Why
 
 Commentary on other people's work is one of the internet's biggest content categories, and it still runs on screenshots and screen recordings — a crop tool, a caption app, and no attribution. Riff makes the honest version faster than the dishonest one: clip, quote, comment, and the source link travels with it permanently.
+
+## Screenshots
+
+<img src="assets/screenshot-feed.png" alt="Riff's Feed view: a pinned text riff from The Atlantic, a YouTube clip with a timestamp badge, and an Overcast podcast clip, each with a comment and tags" width="360" />
+
+The Feed — pinned riffs float to the top, each card shows its kind (text, video, audio) by a small color dot, and comments sit right under the source. See it running for real in the [interactive demo](#install) or the [landing page](./site/index.html).
 
 ## Features
 
@@ -80,6 +113,20 @@ _Not yet published — see [`PUBLISHING_CHECKLIST.md`](./PUBLISHING_CHECKLIST.md
 | Publish a clip | Card menu → **Export landing page** → downloads a real, shareable HTML file |
 | Move fast | `/` to search, `N` for new, arrows + Enter to browse the feed |
 
+## How it compares
+
+Riff sits in a specific gap. Worth being straight about where it overlaps with existing tools and where it doesn't:
+
+| | Clips other people's content | Attribution travels with it | Cross-medium (text + video + audio) | Lives in your browser, no account |
+|---|:---:|:---:|:---:|:---:|
+| **Riff** | ✅ | ✅ | ✅ | ✅ |
+| Genius | ✅ (text only, historically) | Only inside Genius | ❌ | ❌ (accounts, hosted) |
+| OpusClip / Descript | ❌ (repurposes *your own* content) | — | Video-focused | ❌ (accounts, hosted) |
+| Readwise / Hypothesis | ✅ | ✅ | Text-focused | ❌ (accounts, hosted) |
+| X quote posts / Community Notes | ✅ | Only inside X | ❌ | Requires the platform |
+
+The honest summary: Genius proved people want to annotate the web and lost the distribution fight because annotations only ever lived on Genius. Riff is a browser extension on purpose — no server means no platform to lose the fight for, but it also means no public feed (yet — see [Roadmap](#roadmap)).
+
 ## Architecture
 
 <img src="docs/architecture.svg" alt="Riff architecture: a web page feeds a capture through background.js into the side panel, which reads and writes chrome.storage.local and can export a self-contained HTML landing page" width="100%" />
@@ -88,15 +135,23 @@ _Not yet published — see [`PUBLISHING_CHECKLIST.md`](./PUBLISHING_CHECKLIST.md
 riff/
 ├── manifest.json          MV3 manifest — side panel, context menus, commands
 ├── background.js          Service worker: menus, capture, side-panel wiring
-├── icons/                 Extension icons (16/32/48/128)
-└── sidepanel/
-    ├── index.html          Shell: header, search, filters, tab bar
-    ├── styles.css           Design tokens + every component style
-    ├── app.js               View state, rendering, all event handling
-    ├── db.js                chrome.storage.local data layer
-    ├── icons.js              Local hand-authored SVG icon set
-    └── landing.js            Exportable landing-page HTML generator
+├── icons/                 Extension icons (16/32/48/128) — the runtime package
+├── sidepanel/
+│   ├── index.html          Shell: header, search, filters, tab bar
+│   ├── styles.css           Design tokens + every component style
+│   ├── app.js                View state, rendering, all event handling
+│   ├── db.js                 chrome.storage.local data layer
+│   ├── icons.js               Local hand-authored SVG icon set
+│   └── landing.js              Exportable landing-page HTML generator
+│
+├── site/                  Marketing landing page (not part of the extension package)
+├── docs/                   architecture.svg — the diagram above
+├── assets/                 Logo + README screenshots
+├── store-assets/           Chrome Web Store listing images
+└── .github/                Issue/PR templates, CI workflow
 ```
+
+Only `manifest.json`, `background.js`, `icons/`, and `sidepanel/` ship inside the actual extension zip — everything else is repo-only tooling and marketing, and is excluded when packaging for the Chrome Web Store (see [`PUBLISHING_CHECKLIST.md`](./PUBLISHING_CHECKLIST.md)).
 
 **Capture pipeline.** `background.js` injects a small, self-contained function into the active tab via `chrome.scripting.executeScript` on demand — there is no always-on content script. It reads the current selection, or a `<video>`/`<audio>` element's playhead, plus `og:` metadata and the favicon, and hands it to the side panel as a "pending capture."
 
@@ -105,6 +160,49 @@ riff/
 **Copyright posture.** Exported landing pages never re-host media. YouTube clips cue the platform's own official `<iframe>` embed at the clipped timestamp; everything else links back to the source with a plain-text timestamp.
 
 **Why zero dependencies.** No framework, no bundler, no npm packages. Every file loads directly in the browser as-is. This keeps the entire codebase auditable in one sitting and makes "load unpacked" always work with no build step — a deliberate trade-off for a small, security-sensitive browser extension.
+
+## Data model
+
+Every riff is one JSON object in the array stored under `chrome.storage.local`'s `riffClips` key (see `sidepanel/db.js`). Roughly:
+
+```js
+{
+  id: "rf_m3x9k2_a1b2c3d",       // generated, not sequential
+  kind: "text" | "video" | "audio",
+  createdAt: "2026-08-14T09:12:00.000Z",
+  updatedAt: "2026-08-14T09:12:00.000Z",
+  pinned: false,
+  archived: false,
+  tags: ["media", "attribution"],
+
+  source: {
+    url: "https://example.com/article",
+    title: "Article title",
+    siteName: "Example",
+    favicon: "https://example.com/favicon.ico",
+    author: null,               // when the page exposes one
+  },
+
+  // text clips:
+  quote: "The quoted passage.",
+
+  // video/audio clips:
+  mediaTitle: "Video or episode title",
+  channel: "Creator or channel name",
+  startSeconds: 1452,
+  endSeconds: 1497,             // capped to a 90-second span
+  totalDuration: 5820,          // null if unknown
+
+  comment: {
+    kind: "text" | "voice",
+    text: "Your take, if written",
+    audioDataUrl: null,          // base64 data: URL if recorded
+    audioDurationSeconds: null,
+  },
+}
+```
+
+No formal migration system exists yet — new boolean fields (like `archived`, added in 1.2.0) rely on `undefined` being falsy, so older stored clips without the field behave correctly without a migration step (`!clip.archived` is `true` when the field was never set). That works for simple flags; it won't work for fields that need a real default value, so if you add one of those, backfill it explicitly rather than assuming.
 
 ## Privacy & permissions
 
@@ -117,6 +215,30 @@ riff/
 | `tabs` | Find the active tab to capture from |
 
 No accounts, no analytics, no network calls of any kind. Clear your archive any time from **Settings → Clear all riffs**.
+
+## Browser support
+
+Built and tested against Chrome (Manifest V3, side panel API — needs Chrome 114+). It should load fine in any Chromium-based browser with side panel support (Edge, Brave, Opera) since there's nothing Chrome-specific beyond standard `chrome.*` extension APIs, but only Chrome is actively tested. Firefox and Safari use different extension APIs entirely and aren't supported.
+
+## FAQ
+
+**Does my data leave my browser?**
+No. There's no server in this build. Everything — clips, tags, settings, voice-note audio — lives in `chrome.storage.local` on your device. See [Privacy & permissions](#privacy--permissions).
+
+**What happens to my riffs if I uninstall the extension?**
+Chrome deletes the extension's storage along with it. Export your archive first (Settings → Export as JSON) if you want to keep it — you can re-import that file after reinstalling.
+
+**Can other people see what I riff?**
+No. There's no account and no public feed in this build. The only way a riff leaves your device is if you explicitly export it (a landing page HTML file, a JSON backup, or copied text).
+
+**Does exporting a clip download or re-host the video?**
+No. YouTube clips embed YouTube's own official player at your timestamp. Nothing is downloaded or re-hosted — see [Copyright posture](#architecture).
+
+**Why isn't this on the Chrome Web Store yet?**
+It's a checklist away — see [`PUBLISHING_CHECKLIST.md`](./PUBLISHING_CHECKLIST.md) for exactly what's left (mainly: real screenshots and a hosted privacy policy).
+
+**Why no npm packages at all, not even something small?**
+It's a deliberate constraint, not an oversight — see [Why zero dependencies](#architecture). Load-unpacked-and-it-just-works is worth more here than convenience during development.
 
 ## Contributing
 

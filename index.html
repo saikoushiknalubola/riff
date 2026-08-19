@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<!--
+  Before you publish this page: set GITHUB_URL near the bottom of this file
+  (search for "EDIT THIS") to your actual repo URL. Every "View source" /
+  "Read the code" / "GitHub" link on the page pulls from that one constant.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Riff — clip, quote, comment</title>
+<meta name="description" content="A browser extension for commenting on other people's work without cropping the source out. Clip a passage, a video moment, or a podcast beat, add your take, and keep the link permanently." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,700;1,800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f7f7f4; --paper-deep:#eeede6; --card:#ffffff;
+    --ink:#12141c; --muted:#5b5f68; --muted-2:#8a8f99; --line:#e4e3dc; --line-strong:#d3d2c9;
+    --signal:#2342f5; --signal-deep:#1a35c4; --violet:#7c5cff; --amber:#d97e1f;
+    --font-display:"Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+    --font-mono:"IBM Plex Mono", ui-monospace, SFMono-Regular, monospace;
+    --shadow-sm:0 1px 2px rgba(18,20,28,.06);
+    --shadow-md:0 10px 30px rgba(18,20,28,.08);
+    --shadow-lg:0 24px 60px rgba(18,20,28,.14);
+    --radius-lg:20px; --radius-md:14px; --radius-sm:9px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:var(--font-display); font-size:16px; line-height:1.5;
+    -webkit-font-smoothing:antialiased; overflow-x:hidden;
+  }
+  img,svg{max-width:100%; display:block;}
+  a{color:inherit;}
+  .container{max-width:1120px; margin:0 auto; padding:0 24px;}
+  ::selection{background:rgba(35,66,245,.18);}
+  :focus-visible{outline:2px solid var(--signal); outline-offset:3px; border-radius:4px;}
+
+  /* ---------------------------------------------------------- scroll progress */
+  .scroll-progress{
+    position:fixed; top:0; left:0; height:3px; width:100%;
+    background:linear-gradient(90deg, var(--signal), var(--violet));
+    transform:scaleX(0); transform-origin:left; z-index:60;
+    transition:transform .08s linear;
+  }
+
+  /* ---------------------------------------------------------- nav */
+  .nav{
+    position:sticky; top:0; z-index:50;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:18px 24px; background:rgba(247,247,244,.82); backdrop-filter:blur(10px);
+    border-bottom:1px solid transparent; transition:border-color .25s ease, padding .25s ease, background .25s ease;
+  }
+  .nav.is-scrolled{ border-bottom-color:var(--line); padding:12px 24px; background:rgba(247,247,244,.92); }
+  .nav-inner{max-width:1120px; margin:0 auto; width:100%; display:flex; align-items:center; justify-content:space-between;}
+  .brand{display:flex; align-items:center; gap:9px; text-decoration:none;}
+  .brand-mark{
+    width:28px; height:28px; border-radius:8px; flex-shrink:0;
+    background:linear-gradient(165deg, var(--signal), var(--signal-deep));
+    color:#fff; font-weight:800; font-style:italic; font-size:15px;
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 1px 1px rgba(0,0,0,.14);
+  }
+  .brand-word{font-weight:800; font-size:19px; letter-spacing:-.02em; color:var(--ink);}
+  .nav-links{display:flex; align-items:center; gap:32px; font-size:14.5px; font-weight:600; color:var(--muted);}
+  .nav-links a{text-decoration:none; transition:color .15s ease; position:relative;}
+  .nav-links a:hover{color:var(--ink);}
+  .nav-links a::after{
+    content:""; position:absolute; left:0; right:100%; bottom:-4px; height:2px;
+    background:var(--signal); transition:right .22s cubic-bezier(.2,.7,.2,1); border-radius:2px;
+  }
+  .nav-links a:hover::after{right:0;}
+  @media (max-width:640px){ .nav-links a::after{ display:none; } }
+  .nav-cta{display:flex; align-items:center; gap:10px;}
+  .nav-toggle{display:none; background:none; border:none; cursor:pointer; padding:6px;}
+  .nav-toggle span{display:block; width:20px; height:2px; background:var(--ink); margin:4px 0; border-radius:2px;}
+
+  /* ---------------------------------------------------------- buttons */
+  .btn{
+    display:inline-flex; align-items:center; gap:8px; justify-content:center;
+    font-family:inherit; font-weight:700; font-size:14.5px; text-decoration:none;
+    border-radius:10px; padding:12px 20px; border:1px solid transparent; cursor:pointer;
+    transition:transform .18s cubic-bezier(.2,.7,.2,1), box-shadow .18s ease, opacity .15s ease, background .15s ease, border-color .15s ease;
+  }
+  .btn:hover{transform:translateY(-2px);}
+  .btn:active{transform:translateY(0);}
+  .btn-primary{background:var(--ink); color:#fff;}
+  .btn-primary:hover{box-shadow:0 10px 24px rgba(18,20,28,.24); opacity:.94;}
+  .btn-ghost{background:transparent; color:var(--ink); border-color:var(--line-strong);}
+  .btn-ghost:hover{background:var(--card); border-color:var(--ink); box-shadow:var(--shadow-sm);}
+  .btn-sm{padding:9px 15px; font-size:13.5px;}
+
+  /* ---------------------------------------------------------- reveal utility */
+  .reveal{opacity:0; transform:translateY(16px); transition:opacity .7s cubic-bezier(.2,.7,.2,1), transform .7s cubic-bezier(.2,.7,.2,1);}
+  .reveal.in-view{opacity:1; transform:translateY(0);}
+
+  /* ---------------------------------------------------------- eyebrow / headings */
+  .eyebrow{
+    display:inline-flex; align-items:center; gap:7px; font-family:var(--font-mono);
+    font-size:12.5px; font-weight:500; color:var(--signal); letter-spacing:.02em;
+    background:rgba(35,66,245,.08); border:1px solid rgba(35,66,245,.18);
+    padding:5px 12px; border-radius:999px; margin-bottom:20px;
+  }
+  .eyebrow-dot{width:6px; height:6px; border-radius:50%; background:var(--signal);}
+  h1,h2,h3{margin:0; letter-spacing:-.02em;}
+  .section-head{max-width:640px; margin:0 auto 56px; text-align:center;}
+  .section-head h2{font-size:clamp(28px,4vw,40px); font-weight:800; line-height:1.15;}
+  .section-head p{font-size:16.5px; color:var(--muted); margin:16px 0 0; line-height:1.6;}
+  section{padding:100px 0;}
+  @media (max-width:720px){ section{padding:64px 0;} }
+
+  /* ---------------------------------------------------------- hero */
+  .hero{position:relative; padding:120px 0 100px; overflow:hidden;}
+  .hero-glow{
+    position:absolute; inset:-200px -200px auto auto; width:640px; height:640px; border-radius:50%;
+    background:radial-gradient(circle, rgba(35,66,245,.14), rgba(124,92,255,.08) 45%, transparent 70%);
+    filter:blur(10px); pointer-events:none; z-index:0;
+  }
+  .hero-glow-2{
+    position:absolute; inset:auto auto -260px -220px; width:560px; height:560px; border-radius:50%;
+    background:radial-gradient(circle, rgba(217,126,31,.10), transparent 70%);
+    filter:blur(10px); pointer-events:none; z-index:0;
+  }
+  .hero-inner{position:relative; z-index:1; text-align:center; max-width:760px; margin:0 auto;}
+  .hero h1{
+    font-size:clamp(34px,6vw,60px); font-weight:800; line-height:1.08; letter-spacing:-.03em;
+  }
+  .hero h1 em{
+    font-style:italic; font-weight:800; color:var(--signal);
+    background:linear-gradient(transparent 66%, rgba(35,66,245,.16) 66%);
+  }
+  .hero p.lede{
+    font-size:18px; color:var(--muted); line-height:1.6; margin:24px auto 0; max-width:560px;
+  }
+  .hero-actions{display:flex; align-items:center; justify-content:center; gap:14px; margin-top:36px; flex-wrap:wrap;}
+  .hero-note{margin-top:18px; font-size:12.5px; color:var(--muted-2); font-family:var(--font-mono);}
+
+  /* ---------------------------------------------------------- hero demo (signature element) */
+  .demo-frame{
+    position:relative; max-width:600px; margin:72px auto 0; text-align:left;
+    background:var(--card); border:1px solid var(--line); border-radius:var(--radius-lg);
+    box-shadow:var(--shadow-lg); overflow:hidden;
+  }
+  .demo-chrome{display:flex; align-items:center; gap:7px; padding:14px 18px; border-bottom:1px solid var(--line);}
+  .demo-dot{width:9px; height:9px; border-radius:50%; background:var(--line-strong);}
+  .demo-url{
+    margin-left:10px; font-family:var(--font-mono); font-size:11.5px; color:var(--muted-2);
+    background:var(--paper); border:1px solid var(--line); border-radius:6px; padding:4px 10px; flex:1;
+  }
+  .demo-body{padding:30px 28px 34px; position:relative; min-height:230px;}
+  .demo-article{font-size:15px; line-height:1.75; color:var(--ink);}
+  .demo-highlight{
+    position:relative; border-radius:3px; box-decoration-break:clone; -webkit-box-decoration-break:clone;
+    background-size:0% 100%; background-repeat:no-repeat; background-position:left;
+    background-image:linear-gradient(rgba(35,66,245,.16), rgba(35,66,245,.16));
+    animation:sweepHighlight .01s linear .55s forwards;
+  }
+  .demo-pill{
+    position:absolute; display:inline-flex; align-items:center; gap:6px;
+    background:var(--ink); color:#fff; font-size:12px; font-weight:700;
+    padding:7px 12px 7px 10px; border-radius:999px; box-shadow:var(--shadow-md);
+    opacity:0; transform:translateY(6px) scale(.94); left:28px; top:118px;
+    animation:pillIn 5.6s ease forwards;
+  }
+  .demo-pill svg{width:13px; height:13px;}
+  .demo-card{
+    margin-top:22px; border:1px solid var(--line); border-radius:var(--radius-md);
+    padding:16px 18px; opacity:0; transform:translateY(14px);
+    animation:cardIn 5.6s ease forwards;
+  }
+  .demo-card-head{display:flex; align-items:center; gap:8px; font-size:11.5px; color:var(--muted); margin-bottom:10px;}
+  .demo-favicon{width:14px; height:14px; border-radius:4px; background:#e85a3c; flex-shrink:0;}
+  .demo-dotsep{width:3px; height:3px; border-radius:50%; background:var(--muted-2);}
+  .demo-quote{
+    font-size:14.5px; font-weight:700; line-height:1.5; margin:0 0 12px; padding-left:12px;
+    border-left:3px solid var(--signal); position:relative;
+  }
+  .demo-quote-bar{
+    position:absolute; left:-3px; top:0; width:3px; height:0%; background:var(--signal);
+    animation:barIn 5.6s ease forwards;
+  }
+  .demo-comment{
+    font-size:12.5px; color:var(--muted); background:var(--paper); border-radius:8px; padding:10px 12px;
+    opacity:0; animation:fadeInUp 5.6s ease forwards;
+  }
+
+  @keyframes sweepHighlight{ to{ background-size:100% 100%; } }
+  @keyframes pillIn{
+    0%,26%{ opacity:0; transform:translateY(6px) scale(.94); }
+    32%,46%{ opacity:1; transform:translateY(0) scale(1); }
+    54%,100%{ opacity:0; transform:translateY(-4px) scale(.98); }
+  }
+  @keyframes cardIn{ 0%,50%{opacity:0; transform:translateY(14px);} 66%,100%{opacity:1; transform:translateY(0);} }
+  @keyframes barIn{ 0%,50%{height:0%;} 72%,100%{height:100%;} }
+  @keyframes fadeInUp{ 0%,64%{opacity:0; transform:translateY(6px);} 82%,100%{opacity:1; transform:translateY(0);} }
+
+  /* ---------------------------------------------------------- problem / stat strip */
+  .problem-grid{display:grid; grid-template-columns:1fr 1fr; gap:56px; align-items:center;}
+  .problem-copy h2{font-size:clamp(26px,3.6vw,34px); font-weight:800; line-height:1.2; margin-bottom:18px;}
+  .problem-copy p{font-size:15.5px; color:var(--muted); line-height:1.7; margin:0 0 14px;}
+  .problem-copy strong{color:var(--ink);}
+  .crop-card{
+    background:var(--card); border:1px solid var(--line); border-radius:var(--radius-lg); padding:22px;
+    box-shadow:var(--shadow-md); position:relative;
+  }
+  .crop-mark{position:absolute; width:16px; height:16px; border-color:var(--muted-2); opacity:.5;}
+  .crop-mark.tl{top:10px; left:10px; border-top:2px solid; border-left:2px solid;}
+  .crop-mark.tr{top:10px; right:10px; border-top:2px solid; border-right:2px solid;}
+  .crop-mark.bl{bottom:10px; left:10px; border-bottom:2px solid; border-left:2px solid;}
+  .crop-mark.br{bottom:10px; right:10px; border-bottom:2px solid; border-right:2px solid;}
+  .crop-img{height:150px; border-radius:10px; background:linear-gradient(135deg, #dfe1e6, #c9cbd3); margin-bottom:14px; position:relative; overflow:hidden;}
+  .crop-img::after{content:""; position:absolute; inset:0; background:repeating-linear-gradient(135deg, rgba(255,255,255,.25) 0 2px, transparent 2px 10px);}
+  .crop-caption{font-size:12.5px; color:var(--muted-2); font-family:var(--font-mono); display:flex; align-items:center; gap:8px;}
+  .crop-caption .x{color:#c94b3f; font-weight:700;}
+  .crop-nosrc{text-decoration:line-through; text-decoration-color:#c94b3f;}
+
+  /* ---------------------------------------------------------- how it works */
+  .how-list{display:grid; grid-template-columns:repeat(3,1fr); gap:28px; counter-reset:step; position:relative;}
+  .how-step{position:relative; padding-top:8px;}
+  .how-num{
+    font-family:var(--font-mono); font-size:13px; color:var(--signal); font-weight:600;
+    display:flex; align-items:center; gap:10px; margin-bottom:16px;
+  }
+  .how-num::before{content:""; width:28px; height:1px; background:var(--line-strong);}
+  .how-step h3{font-size:18px; font-weight:700; margin-bottom:8px;}
+  .how-step p{font-size:14.5px; color:var(--muted); line-height:1.65; margin:0;}
+  .how-mini{
+    margin-top:16px; background:var(--card); border:1px solid var(--line); border-radius:var(--radius-sm);
+    padding:12px 14px; font-size:12px; color:var(--muted);
+  }
+  .how-mini .kbd{font-family:var(--font-mono); background:var(--paper); border:1px solid var(--line); border-radius:5px; padding:2px 6px; font-size:11px; color:var(--ink);}
+
+  /* ---------------------------------------------------------- features */
+  .feature-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:20px;}
+  .feature-card{
+    background:var(--card); border:1px solid var(--line); border-radius:var(--radius-md);
+    padding:24px; transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+    position:relative; overflow:hidden;
+  }
+  .feature-card::before{
+    content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
+    background:radial-gradient(220px circle at var(--mx,50%) var(--my,50%), rgba(35,66,245,.10), transparent 70%);
+    opacity:0; transition:opacity .25s ease;
+  }
+  .feature-card:hover::before{opacity:1;}
+  .feature-card:hover{transform:translateY(-3px); box-shadow:var(--shadow-md); border-color:var(--line-strong);}
+  .feature-dot{width:9px; height:9px; border-radius:50%; margin-bottom:16px; position:relative;}
+  .feature-card h3{font-size:16px; font-weight:700; margin-bottom:8px; position:relative;}
+  .feature-card p{font-size:13.5px; color:var(--muted); line-height:1.6; margin:0; position:relative;}
+
+  /* ---------------------------------------------------------- philosophy */
+  .philosophy{background:var(--ink); color:var(--paper); border-radius:28px; margin:0 24px; padding:76px 56px;}
+  .philosophy-inner{max-width:680px; margin:0 auto; text-align:center;}
+  .philosophy h2{font-size:clamp(26px,3.6vw,34px); font-weight:800; color:#fff; margin-bottom:20px;}
+  .philosophy p{font-size:16px; color:rgba(247,247,244,.72); line-height:1.75; margin:0 0 14px;}
+  .philosophy code{font-family:var(--font-mono); background:rgba(247,247,244,.1); padding:2px 7px; border-radius:5px; font-size:14px; color:#fff;}
+
+  /* ---------------------------------------------------------- open source */
+  .oss-grid{display:grid; grid-template-columns:1fr 1fr; gap:56px; align-items:center;}
+  .oss-copy h2{font-size:clamp(26px,3.6vw,34px); font-weight:800; margin-bottom:18px; line-height:1.2;}
+  .oss-copy p{font-size:15.5px; color:var(--muted); line-height:1.7; margin:0 0 22px;}
+  .oss-stats{display:flex; gap:28px; margin:26px 0 30px; flex-wrap:wrap;}
+  .oss-stat strong{display:block; font-size:26px; font-weight:800;}
+  .oss-stat span{font-size:12.5px; color:var(--muted-2); font-family:var(--font-mono);}
+  .oss-diagram{background:var(--card); border:1px solid var(--line); border-radius:var(--radius-lg); padding:20px; box-shadow:var(--shadow-md);}
+
+  /* ---------------------------------------------------------- final cta */
+  .final-cta{text-align:center;}
+  .final-cta h2{font-size:clamp(28px,4.4vw,42px); font-weight:800; line-height:1.15; margin-bottom:18px;}
+  .final-cta p{font-size:16.5px; color:var(--muted); margin:0 0 32px;}
+
+  /* ---------------------------------------------------------- footer */
+  footer{border-top:1px solid var(--line); padding:44px 0;}
+  .footer-inner{display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:18px;}
+  .footer-links{display:flex; gap:24px; font-size:13.5px; color:var(--muted); flex-wrap:wrap;}
+  .footer-links a{text-decoration:none;}
+  .footer-links a:hover{color:var(--ink);}
+  .footer-meta{font-size:12.5px; color:var(--muted-2); font-family:var(--font-mono);}
+
+  /* ---------------------------------------------------------- responsive */
+  @media (max-width:860px){
+    .problem-grid, .oss-grid{grid-template-columns:1fr; gap:36px;}
+    .how-list, .feature-grid{grid-template-columns:1fr 1fr;}
+    .philosophy{padding:52px 28px; margin:0 16px;}
+  }
+  @media (max-width:640px){
+    .nav-links{
+      position:fixed; inset:64px 16px auto 16px; flex-direction:column; align-items:flex-start; gap:4px;
+      background:var(--card); border:1px solid var(--line); border-radius:var(--radius-md); padding:12px;
+      box-shadow:var(--shadow-lg); transform:translateY(-8px); opacity:0; pointer-events:none; transition:all .18s ease;
+    }
+    .nav-links a{padding:10px 12px; width:100%; border-radius:8px;}
+    .nav-links a:hover{background:var(--paper);}
+    .nav-links.is-open{transform:translateY(0); opacity:1; pointer-events:auto;}
+    .nav-toggle{display:block;}
+    .nav-cta .btn-ghost{display:none;}
+    .how-list, .feature-grid{grid-template-columns:1fr;}
+    .hero{padding:88px 0 64px;}
+    .demo-body{padding:22px 18px 26px;}
+    section{padding:64px 0;}
+    .philosophy{border-radius:20px;}
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto;}
+    *{animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important;}
+    .reveal{opacity:1; transform:none;}
+    .demo-highlight{background-size:100% 100%;}
+    .demo-pill{opacity:0;}
+    .demo-card, .demo-comment{opacity:1; transform:none;}
+    .demo-quote-bar{height:100%;}
+  }
+</style>
+</head>
+<body>
+  <div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
+
+  <header class="nav" id="nav">
+    <div class="nav-inner">
+      <a class="brand" href="#top">
+        <span class="brand-mark">R</span>
+        <span class="brand-word">riff</span>
+      </a>
+      <nav class="nav-links" id="navLinks">
+        <a href="#why">Why</a>
+        <a href="#how">How it works</a>
+        <a href="#features">Features</a>
+        <a href="#open-source">Open source</a>
+      </nav>
+      <div class="nav-cta">
+        <a class="btn btn-ghost btn-sm" data-github-link href="#" target="_blank" rel="noopener">View source</a>
+        <a class="btn btn-primary btn-sm" href="#get">Get the extension</a>
+        <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main id="top">
+
+    <!-- ================= HERO ================= -->
+    <section class="hero">
+      <div class="hero-glow" aria-hidden="true"></div>
+      <div class="hero-glow-2" aria-hidden="true"></div>
+      <div class="container">
+        <div class="hero-inner">
+          <span class="eyebrow"><span class="eyebrow-dot"></span>A browser extension, not a platform</span>
+          <h1>Screenshots cut the source out.<br><em>Riff doesn't.</em></h1>
+          <p class="lede">Highlight a passage, clip a video moment, or grab a podcast beat — add your take — and the link to where it came from travels with it. Permanently.</p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="#get">Get the extension</a>
+            <a class="btn btn-ghost" href="#how">See how it works</a>
+          </div>
+          <p class="hero-note">Manifest V3 &middot; zero dependencies &middot; nothing leaves your browser</p>
+        </div>
+
+        <div class="demo-frame reveal" id="heroDemo">
+          <div class="demo-chrome">
+            <span class="demo-dot"></span><span class="demo-dot"></span><span class="demo-dot"></span>
+            <span class="demo-url">theatlantic.com/technology/the-slow-death-of-the-screenshot</span>
+          </div>
+          <div class="demo-body">
+            <p class="demo-article">
+              Every screenshot is a small act of erasure: the crop removes the byline,
+              <span class="demo-highlight">the reply removes the thread, and what's left behind is a claim nobody can check.</span>
+              It's the fastest way to share a take, and the easiest way to lose the source.
+            </p>
+            <span class="demo-pill">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 17V9M12 17V5M17 17v-6"/></svg>
+              Riff this selection
+            </span>
+            <div class="demo-card">
+              <div class="demo-card-head">
+                <span class="demo-favicon"></span>
+                <span>The Atlantic</span><span class="demo-dotsep"></span><span>just now</span>
+              </div>
+              <p class="demo-quote"><span class="demo-quote-bar"></span>&ldquo;the reply removes the thread, and what's left behind is a claim nobody can check.&rdquo;</p>
+              <p class="demo-comment">This is the whole thesis in one line. The source link is still right here.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= WHY ================= -->
+    <section id="why">
+      <div class="container">
+        <div class="problem-grid">
+          <div class="problem-copy reveal">
+            <span class="eyebrow"><span class="eyebrow-dot"></span>Why this exists</span>
+            <h2>The honest version should be the fast one</h2>
+            <p>Right now it isn't. A screenshot takes four taps: capture, crop, caption, post. The source is usually gone by the second one.</p>
+            <p><strong>Genius spent a decade and $77.7 million</strong> trying to fix this for song lyrics and text alone, and still lost the war on distribution — the annotations only ever lived on Genius. It sold for roughly what it raised.</p>
+            <p>Riff isn't trying to be the platform. It's trying to be the fastest way to do the honest thing, in the browser you already have open.</p>
+          </div>
+          <div class="crop-card reveal">
+            <span class="crop-mark tl"></span><span class="crop-mark tr"></span>
+            <span class="crop-mark bl"></span><span class="crop-mark br"></span>
+            <div class="crop-img"></div>
+            <div class="crop-caption"><span class="x">&times;</span> <span class="crop-nosrc">source: unknown</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= HOW ================= -->
+    <section id="how">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="eyebrow"><span class="eyebrow-dot"></span>Three steps, no account</span>
+          <h2>From "I have a take" to "it's saved" in one motion</h2>
+        </div>
+        <div class="how-list">
+          <div class="how-step reveal">
+            <div class="how-num">01</div>
+            <h3>Highlight or right-click</h3>
+            <p>Select a passage on any page, or right-click a video or podcast player to grab up to 90 seconds at the current timestamp.</p>
+            <div class="how-mini">Shortcut: <span class="kbd">Ctrl/Cmd+Shift+K</span></div>
+          </div>
+          <div class="how-step reveal">
+            <div class="how-num">02</div>
+            <h3>Add your take</h3>
+            <p>Type it, or record a voice note, right there in the sidebar. Tag it if you want to find it again later.</p>
+            <div class="how-mini">Live autocomplete pulls from tags you've already used</div>
+          </div>
+          <div class="how-step reveal">
+            <div class="how-num">03</div>
+            <h3>Keep it, or hand it off</h3>
+            <p>Every riff lives in your local, searchable archive. Export it as a real page whenever you want to share it.</p>
+            <div class="how-mini">The exported page links back — it never re-hosts the file</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= FEATURES ================= -->
+    <section id="features">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="eyebrow"><span class="eyebrow-dot"></span>What's actually in it</span>
+          <h2>Built for people who comment on things for a living, or just can't help it</h2>
+        </div>
+        <div class="feature-grid">
+          <div class="feature-card reveal">
+            <div class="feature-dot" style="background:var(--signal)"></div>
+            <h3>Text, video, or audio</h3>
+            <p>One capture flow for a quoted passage, a YouTube moment with the real title and channel, or a podcast beat — up to 90 seconds each.</p>
+          </div>
+          <div class="feature-card reveal">
+            <div class="feature-dot" style="background:var(--violet)"></div>
+            <h3>Tags that actually help</h3>
+            <p>Click any tag to filter. Rename or delete one across your whole archive from Settings. Autocomplete suggests as you type.</p>
+          </div>
+          <div class="feature-card reveal">
+            <div class="feature-dot" style="background:var(--amber)"></div>
+            <h3>Archive, don't delete</h3>
+            <p>Soft-hide a riff without losing it. Everything destructive comes with an undo — single or bulk.</p>
+          </div>
+          <div class="feature-card reveal">
+            <div class="feature-dot" style="background:var(--signal)"></div>
+            <h3>Related clips</h3>
+            <p>Open any riff and see what else you've saved from the same source, without hunting for it.</p>
+          </div>
+          <div class="feature-card reveal">
+            <div class="feature-dot" style="background:var(--violet)"></div>
+            <h3>Keyboard-first</h3>
+            <p><span class="kbd" style="font-family:var(--font-mono); font-size:12px; background:var(--paper); border:1px solid var(--line); border-radius:5px; padding:2px 6px;">/</span> to search, <span class="kbd" style="font-family:var(--font-mono); font-size:12px; background:var(--paper); border:1px solid var(--line); border-radius:5px; padding:2px 6px;">N</span> for a new riff, arrow keys to move through the feed.</p>
+          </div>
+          <div class="feature-card reveal">
+            <div class="feature-dot" style="background:var(--amber)"></div>
+            <h3>Real exports</h3>
+            <p>A finished, self-contained HTML page per clip — not a screenshot of your archive, an actual shareable artifact.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= PHILOSOPHY ================= -->
+    <section>
+      <div class="philosophy reveal">
+        <div class="philosophy-inner">
+          <span class="eyebrow" style="background:rgba(255,255,255,.08); border-color:rgba(255,255,255,.14); color:#fff;"><span class="eyebrow-dot" style="background:#fff;"></span>Copyright posture</span>
+          <h2>It never rips the file</h2>
+          <p>A YouTube clip in Riff plays through YouTube's own embedded player, cued to your timestamp. Nothing gets downloaded, re-hosted, or stripped of where it came from.</p>
+          <p>If a clip is yours and you want it gone, the source link is <code>one tap away</code> on every card — no takedown form required to find out who to ask.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= OPEN SOURCE ================= -->
+    <section id="open-source">
+      <div class="container">
+        <div class="oss-grid">
+          <div class="oss-copy reveal">
+            <span class="eyebrow"><span class="eyebrow-dot"></span>Open and auditable</span>
+            <h2>No server, no account, no dependencies</h2>
+            <p>Riff runs entirely in your browser. No framework, no bundler, no <code style="font-family:var(--font-mono); background:var(--paper); border:1px solid var(--line); padding:1px 6px; border-radius:5px; font-size:14px;">npm install</code>. Every file loads exactly as it's written, which means the whole codebase is auditable in one sitting.</p>
+            <div class="oss-stats">
+              <div class="oss-stat"><strong>0</strong><span>npm dependencies</span></div>
+              <div class="oss-stat"><strong>6</strong><span>source files</span></div>
+              <div class="oss-stat"><strong>0</strong><span>accounts needed</span></div>
+            </div>
+            <a class="btn btn-primary" data-github-link href="#" target="_blank" rel="noopener">Read the code</a>
+          </div>
+          <div class="oss-diagram reveal">
+            <img src="../docs/architecture.svg" alt="Riff architecture: a web page feeds a capture through background.js into the side panel, which reads and writes chrome.storage.local and can export a self-contained HTML landing page" />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= FINAL CTA ================= -->
+    <section id="get">
+      <div class="container">
+        <div class="final-cta reveal">
+          <h2>Install it, riff something, see for yourself</h2>
+          <p>No sign-up. No trial. Load it and it's already yours.</p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" data-github-link href="#" target="_blank" rel="noopener">View on GitHub</a>
+            <a class="btn btn-ghost" href="#why">Read why it exists</a>
+          </div>
+          <p class="hero-note">Chrome Web Store listing coming soon &middot; load unpacked in the meantime</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    <div class="container footer-inner">
+      <a class="brand" href="#top">
+        <span class="brand-mark" style="width:22px; height:22px; font-size:12px;">R</span>
+        <span class="brand-word" style="font-size:15px;">riff</span>
+      </a>
+      <nav class="footer-links">
+        <a data-github-link href="#" target="_blank" rel="noopener">GitHub</a>
+        <a href="#why">Why</a>
+        <a href="#features">Features</a>
+        <a href="#open-source">Open source</a>
+      </nav>
+      <span class="footer-meta">Open source &middot; no accounts &middot; no analytics</span>
+    </div>
+  </footer>
+
+<script>
+(function () {
+  "use strict";
+
+  // EDIT THIS before publishing:
+  var GITHUB_URL = "https://github.com/YOUR-USERNAME/riff";
+  document.querySelectorAll("[data-github-link]").forEach(function (a) {
+    a.href = GITHUB_URL;
+  });
+
+  var nav = document.getElementById("nav");
+  var scrollProgress = document.getElementById("scrollProgress");
+  var onScroll = function () {
+    if (window.scrollY > 8) nav.classList.add("is-scrolled");
+    else nav.classList.remove("is-scrolled");
+
+    var doc = document.documentElement;
+    var max = doc.scrollHeight - doc.clientHeight;
+    var pct = max > 0 ? window.scrollY / max : 0;
+    scrollProgress.style.transform = "scaleX(" + pct + ")";
+  };
+  window.addEventListener("scroll", onScroll, { passive: true });
+  window.addEventListener("resize", onScroll);
+  onScroll();
+
+  var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (!reduceMotion && window.matchMedia && window.matchMedia("(hover: hover)").matches) {
+    document.querySelectorAll(".feature-card").forEach(function (card) {
+      card.addEventListener("mousemove", function (e) {
+        var rect = card.getBoundingClientRect();
+        card.style.setProperty("--mx", (e.clientX - rect.left) + "px");
+        card.style.setProperty("--my", (e.clientY - rect.top) + "px");
+      });
+    });
+  }
+
+  var navToggle = document.getElementById("navToggle");
+  var navLinks = document.getElementById("navLinks");
+
+  function closeNav() {
+    navLinks.classList.remove("is-open");
+    navToggle.setAttribute("aria-expanded", "false");
+  }
+
+  navToggle.addEventListener("click", function (e) {
+    e.stopPropagation();
+    var open = navLinks.classList.toggle("is-open");
+    navToggle.setAttribute("aria-expanded", open ? "true" : "false");
+  });
+  navLinks.querySelectorAll("a").forEach(function (a) {
+    a.addEventListener("click", closeNav);
+  });
+  document.addEventListener("click", function (e) {
+    if (!navLinks.classList.contains("is-open")) return;
+    if (navLinks.contains(e.target) || navToggle.contains(e.target)) return;
+    closeNav();
+  });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && navLinks.classList.contains("is-open")) closeNav();
+  });
+
+  if ("IntersectionObserver" in window) {
+    var items = document.querySelectorAll(".reveal");
+    var seen = new Set();
+    var io = new IntersectionObserver(
+      function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting && !seen.has(entry.target)) {
+            seen.add(entry.target);
+            entry.target.classList.add("in-view");
+          }
+        });
+      },
+      { threshold: 0.12, rootMargin: "0px 0px -40px 0px" }
+    );
+    items.forEach(function (el, i) {
+      el.style.transitionDelay = (i % 3) * 70 + "ms";
+      io.observe(el);
+    });
+  } else {
+    document.querySelectorAll(".reveal").forEach(function (el) {
+      el.classList.add("in-view");
+    });
+  }
+})();
+</script>
+
+</body>
+</html>
